@@ -9,5 +9,4 @@ export class EventService {
     // update
     // delete OR toggle visibility
     // update status
-
 }

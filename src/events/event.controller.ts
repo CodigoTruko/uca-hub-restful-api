@@ -7,14 +7,14 @@ import { ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, Api
 export class EventController {
     
     @Get()
-    @ApiOkResponse({ description: 'Success' })
+    @ApiOkResponse({ description: 'Events found!' })
     @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
     findAllEvents(){
         return 'All Events';
     }
     
     @Get(':id')
-    @ApiOkResponse({ description: 'Success' })
+    @ApiOkResponse({ description: 'Event found!' })
     @ApiNotFoundResponse({ description: 'Event not found' })
     @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
     findEventById(){
@@ -27,6 +27,4 @@ export class EventController {
     createEvent(){
         return 'Event Created';
     }
-
-    
-}   
+}
