@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Event } from './models/interface/event.interface';
 import { CreateEventDto } from './models/dto/createEventDto';
 import { UpdateEventDto } from './models/dto/updateEventDto';
 
 @Injectable()
 export class EventService{
+    private readonly logger = new Logger(EventService.name);
     private readonly events: Event[] = [
         {
             id: "1",
@@ -40,17 +41,14 @@ export class EventService{
             category: category,
             visibility: true
         }
-        console.log(eventToAdd);
+        this.logger.debug(eventToAdd);
         this.events.push(eventToAdd);
-        return eventToAdd;
     }
 
     /*
-    
     createEvent(createEventDto: CreateEventDto){
         this.events.push({createEventDto, visibility: true});
     }
-    
     */
 
     findAllEvents(): Event[]{
@@ -81,7 +79,5 @@ export class EventService{
         const eventFound = this.events.find(_event => _event.id === id);
         // Just toggle
         eventFound.visibility = !eventFound.visibility;
-
-        return eventFound;
     }
 }
