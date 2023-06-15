@@ -1,72 +1,55 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { Community } from "./models/interface/community.interface";
 import { CreateCommunityDto } from "./models/dtos/createCommunityDto";
+import { UpdateCommunityDto } from "./models/dtos/updateCommunityDto";
+import { Community } from "./models/entities/community.schema";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
 
 @Injectable()
 export class CommunityService{
     private readonly logger = new Logger(CommunityService.name);
-    private readonly communities: Community[] = [
-            {
-                id: "1",
-                name: "Furbo UCA",
-                description: "Puro pinshi Furbo maestro",
-                image: "aqui va la imagen",
-                privacy: "public",
-                visibility: true
-            },
-            {
-                id: "2",
-                name: "Pokemon UCA",
-                description: "Puro pinshi Pokemon maestro",
-                image: "aqui va la imagen",
-                privacy: "public",
-                visibility: true
-            },
-            {
-                id: "3",
-                name: "Loleros UCA",
-                description: "Puro pinshi Lol maestro",
-                image: "aqui va la imagen",
-                privacy: "public",
-                visibility: true
-            }        
-    ]
-    createCommunity(createCommunityDto: CreateCommunityDto){
-        const {id, name, description, image, privacy,} = createCommunityDto;
-        const communityToAdd: Community = {
-            id: id,
-            name: name,
-            description: description,
-            image: image,
-            privacy: privacy,
-            visibility: true
-        }
-
-        this.logger.debug(communityToAdd)
-        this.communities.push(communityToAdd)        
+    constructor(@InjectModel(Community.name) private communityModel: Model<Community>){}      
+    
+    async createCommunity(createCommunityDto: CreateCommunityDto){
+        const createCommunity = new this.communityModel(createCommunityDto);
+        this.logger.log(createCommunity);
+        return await createCommunity.save();   
     }
 
-    findAllCommunities(): Community[]{
-        return this.communities;
+    async findAllCommunities(){
+        return await this.communityModel.find().exec();
+        /* this.logger.debug(this.communities);
+        return this.communities; */
     }
 
-    findAllVisibleCommunities(): Community[]{
-        return this.communities.filter(_community => _community.visibility === true);
+    findAllVisibleCommunities(){
+        /* const visibleCommunities = this.communities.filter(_community => _community.visibility === true);
+        this.logger.debug(visibleCommunities);
+        return visibleCommunities; */
     }
 
-    findCommunityById(id: string): Community{
-        return this.communities.find(_community => _community.id === id);
+    findCommunityById(id: string){
+        /* const community = this.communities.find(_community => _community.id === id);
+        this.logger.debug(community);
+        return community; */
     }
-    updateCommunity(id: string, updateCommunityDto: CreateCommunityDto){
-        const {name, description, image, privacy} = updateCommunityDto;
+    updateCommunity(id: string, updateCommunityDto: UpdateCommunityDto){
+        /* const {name, description, image, privacy} = updateCommunityDto;
         const communityToUpdate = this.findCommunityById(id);
         communityToUpdate.name = name;
         communityToUpdate.description = description;
         communityToUpdate.image = image;
         communityToUpdate.privacy = privacy;
+        this.logger.debug(communityToUpdate);
+        return communityToUpdate; */
+    }
+    async deleteCommunity(id: String){
+        await this.communityModel.findByIdAndDelete(id);
     }
     toggleCommunityVisibility(id: string){
-        const communityToToggle = this.findCommunityById(id);
+        /* const communityToToggle = this.findCommunityById(id);
         communityToToggle.visibility = !communityToToggle.visibility;
+        this.logger.debug(communityToToggle);
+        return communityToToggle; */
     }
 }

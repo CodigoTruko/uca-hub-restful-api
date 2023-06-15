@@ -3,5 +3,5 @@ export interface Event {
     title: string,
     description: string,
     category: string,
-    visibility: boolean,
+    visibility: boolean
 }
