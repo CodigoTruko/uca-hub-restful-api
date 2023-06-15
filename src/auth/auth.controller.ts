@@ -12,14 +12,30 @@ export class AuthController{
         private authService: AuthService,
         private userService: UserService
         ){}
+
+    //TODO: Implement Login Bussiness Logic
     @Post('login')
-    login(@Res() res,@Body() loginUserDto: LoginUserDto) {
+    async login(@Res() res,@Body() loginUserDto: LoginUserDto) {
+        try {
+            this.logger.verbose('Attempting Login...')
+            const userFound = this.userService.findUserByIdentifier(loginUserDto.identifier);
 
-        
-
-        return this.authService.signIn(loginUserDto);
+            //Check if user exists
+            if(!userFound) return res.status(404).json({message: 'User not found!'});
+            //Compare Passwords
+            if( loginUserDto.password !== (await userFound).password) return res.status(401).json({message: 'Invalid credentials!'});
+            
+            //Generate Token
+            this.authService.login(loginUserDto);
+            
+            this.logger.verbose('Login Successful!')
+            return 
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: 'Internal server error!'});
+        }
     }
-
+    //TODO: Implement Login Bussiness Logic
     @Post('register')
     register(@Res() res, @Body() registerUserDto:  RegisterUserDto){
         try {
@@ -27,7 +43,7 @@ export class AuthController{
             if(userFound) {
                 return res.status(409).json({message: 'User already exists!'});
             }
-            this.userService.registerUser(registerUserDto);
+            this.userService.createUser(registerUserDto);
         } catch (error) {
             return res.status(500).json({message: 'Internal server error!'});
         }

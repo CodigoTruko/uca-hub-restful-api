@@ -17,7 +17,7 @@ export class UserController {
                 return res.status(400).json({message: 'User already exists!'});
             }
 
-            this.userService.registerUser(registerUserDto);
+            this.userService.createUser(registerUserDto);
             return res.status(201).json({message: 'User created successfully!'});
 
         } catch (error) {

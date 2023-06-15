@@ -13,8 +13,8 @@ import { FacultyModule } from "./faculties/faculty.module";
     EventModule,
     CommunityModule,
     CategoryModule,
-    CategoryModule,
     ProgramModule,
-    FacultyModule],
+    FacultyModule
+  ],
 })
 export class AppModule {}
