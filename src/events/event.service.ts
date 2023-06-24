@@ -1,72 +1,36 @@
-import { Injectable } from '@nestjs/common';
-import { Event } from './models/interface/event.interface';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateEventDto } from './models/dto/createEventDto';
 import { UpdateEventDto } from './models/dto/updateEventDto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Event, EventDocument } from './models/entities/event.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class EventService{
-    private readonly events: Event[] = [
-        {
-            id: "1",
-            title: "CONIA UCA 2023",
-            description: "Engineering and Architecture Congress hosted by UCA",
-            category: "STEM",
-            visibility: true
-        },
-        {
-            id: "2",
-            title: "Humanities Festival",
-            description: "Festival hosted by the Faculty of Humanities and Arts where students can showcase their work",
-            category: "Humanities",
-            visibility: true
-        },
-        {
-            id: "3",
-            title: "Web3 & Ethereum Conference",
-            description: "Conference from a member of the Ethereum Foundation",
-            category: "CRYPTO",
-            visibility: true
-
-        }
-    ]
-
+    private readonly logger = new Logger(EventService.name);
+    constructor(@InjectModel(Event.name) private eventModel: Model<Event>) {}
     
-    createEvent(createEventDto: CreateEventDto){
-        const {id, title, description, category} = createEventDto;
-        const eventToAdd: Event = {
-            id: id,
-            title: title,
-            description: description,
-            category: category,
-            visibility: true
-        }
-        console.log(eventToAdd);
-        this.events.push(eventToAdd);
-        return eventToAdd;
+    async createEvent(createEventDto: CreateEventDto): Promise<EventDocument>{
+        const createEvent = new this.eventModel(createEventDto);
+        this.logger.log(createEvent);
+        return await createEvent.save();
     }
 
-    /*
-    
-    createEvent(createEventDto: CreateEventDto){
-        this.events.push({createEventDto, visibility: true});
-    }
-    
-    */
-
-    findAllEvents(): Event[]{
-        return this.events;
+    async findAllEvents(){
+        return await this.eventModel.find().exec();
     }
 
-    findAllVisibleEvents(): Event[]{
-        return this.events.filter(_event => _event.visibility === true);
+    //TODO: Mucha mierda. todo el crud basicamente
+    async findAllVisibleEvents(){
+        // return this.events.filter(_event => _event.visibility === true);
     }
 
-    findEventById(id: String): Event{
-        return this.events.find(_event => _event.id === id);
+    async findEventById(id: String){
+        // return this.events.find(_event => _event.id === id);
     }
 
-    updateEvent(id: String, updateEventDto: UpdateEventDto){
-        const {title, description, category, visibility} = updateEventDto;
+    async updateEvent(id: String, updateEventDto: UpdateEventDto){
+        /* const {title, description, category, visibility} = updateEventDto;
         const eventToUpdate = this.events.find(_event => _event.id == id);
 
         eventToUpdate.title = title;
@@ -74,14 +38,16 @@ export class EventService{
         eventToUpdate.category = category;
         eventToUpdate.visibility = visibility;
 
-        return eventToUpdate;
+        return eventToUpdate; */
     }
 
-    toggleEventVisibility(id: String){
-        const eventFound = this.events.find(_event => _event.id === id);
-        // Just toggle
-        eventFound.visibility = !eventFound.visibility;
+    async deleteEvent(id: String){
+        await this.eventModel.findByIdAndDelete(id);
+    }
 
-        return eventFound;
+    async toggleEventVisibility(id: String){
+        /* const eventFound = this.events.find(_event => _event.id === id);
+        // Just toggle
+        eventFound.visibility = !eventFound.visibility; */
     }
 }
