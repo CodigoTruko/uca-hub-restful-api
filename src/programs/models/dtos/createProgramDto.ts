@@ -5,5 +5,6 @@ export class CreateProgramDto{
     @IsNotEmpty()
     name: string;
     @IsNotEmpty()
+    @IsMongoId()
     facultyId: Types.ObjectId;
 }

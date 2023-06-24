@@ -5,6 +5,7 @@ import { CategoryModule } from "./categories/category.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ProgramModule } from "./programs/program.module";
 import { FacultyModule } from "./faculties/faculty.module";
+import { AuthModule } from "./auth/auth.module";
 
 
 @Module({
@@ -14,7 +15,8 @@ import { FacultyModule } from "./faculties/faculty.module";
     CommunityModule,
     CategoryModule,
     ProgramModule,
-    FacultyModule
+    FacultyModule,
+    AuthModule
   ],
 })
 export class AppModule {}

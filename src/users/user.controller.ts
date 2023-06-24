@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Param, Post, Res } from "@nestjs/common";
+import { Body, Controller, Get, Logger, Param, Post, Request, Res } from "@nestjs/common";
 import { RegisterUserDto } from "./models/dtos/registerUserDto";
 import { LoginUserDto } from "./models/dtos/loginUserDto";
 import { UserService } from "./user.service";
@@ -9,7 +9,7 @@ export class UserController {
     private readonly logger = new Logger(UserController.name);
     constructor(private userService: UserService) {}
 
-    @Post()
+    /* @Post()
     registerUser(@Res() res, @Body() registerUserDto: RegisterUserDto){
         try {
             
@@ -36,7 +36,27 @@ export class UserController {
             this.logger.error(error);
             return res.status(500).json({message: 'Internal server error!'});
         }
+    } */
+    @Get('profile')
+    getProfile(@Request() req){
+        return req.user;
     }
+
+    @Get('/all')
+    findAllUsers(){
+        //TODO
+    }
+
+    @Get()
+    getUserBookmarks(){
+        //TODO
+    }
+
+    @Get()
+    getUserCommunities(){
+        //TODO
+    }
+
     @Get(':id')
     findUserByUsername(@Res() res, @Param('id') id: string){
         try {

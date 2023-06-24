@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Req, Res} from '@nestjs/common';
-import { ApiBadRequestResponse, ApiConflictResponse, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Request, Response, UseGuards} from '@nestjs/common';
+import { ApiConflictResponse, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { EventService } from './event.service';
 import { CreateEventDto } from './models/dto/createEventDto';
 import { UpdateEventDto } from './models/dto/updateEventDto';
@@ -12,9 +12,8 @@ export class EventController {
 
     @Post()
     @ApiCreatedResponse({ description: 'Event created!' })
-    @ApiConflictResponse({ description: 'There is an error while creating your event. Try again later :)' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    createEvent(@Body() createEventDto: CreateEventDto, @Res() res){
+    createEvent(@Request() req, @Response() res, @Body() createEventDto: CreateEventDto){
         try {
             this.logger.verbose('Creating Event...');
             this.eventService.createEvent(createEventDto);
@@ -25,12 +24,12 @@ export class EventController {
             this.logger.error(error);
         }
     }
-
+    
     @Get()
     @ApiOkResponse({ description: 'Events found!' })
     @ApiNotFoundResponse({ description: 'Events not found' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    async findAllEvents(@Res() res){
+    async findAllEvents(@Response() res){
         try {
             this.logger.verbose('Finding all events...');
             const events = await this.eventService.findAllEvents()
@@ -49,7 +48,7 @@ export class EventController {
     @ApiOkResponse({ description: 'Event found!' })
     @ApiNotFoundResponse({ description: 'Event not found' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    findEventById(@Param('id') id: string, @Res() res){
+    findEventById(@Param('id') id: string, @Response() res){
 
         try {
             const eventToAdd = this.eventService.findEventById(id);
@@ -65,7 +64,7 @@ export class EventController {
     }
     
     @Patch(":id")
-    toggleEventVisibility(@Param('id') id: string, @Res() res){
+    toggleEventVisibility(@Param('id') id: string, @Response() res){
         try {
             const eventToToggle = this.eventService.findEventById(id);
 
@@ -80,7 +79,7 @@ export class EventController {
     }
 
     @Patch(":id")
-    updateEvent(@Param('id') id, @Body() updateEventDto: UpdateEventDto, @Res() res){
+    updateEvent(@Param('id') id, @Body() updateEventDto: UpdateEventDto, @Response() res){
         try {
             const eventToUpdate = this.eventService.findEventById(id);
 
@@ -99,7 +98,7 @@ export class EventController {
     }
 
     @Delete(":id")
-    async deleteEvent(@Param('id') id: string, @Res() res){
+    async deleteEvent(@Param('id') id: string, @Response() res){
         try {
             this.logger.verbose('Deleting event...');
             await this.eventService.deleteEvent(id);

@@ -20,6 +20,7 @@ export class EventService{
         return await this.eventModel.find().exec();
     }
 
+    //TODO: Mucha mierda. todo el crud basicamente
     async findAllVisibleEvents(){
         // return this.events.filter(_event => _event.visibility === true);
     }

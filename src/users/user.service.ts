@@ -1,21 +1,26 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { RegisterUserDto } from "./models/dtos/registerUserDto";
 import { User, UserDocument } from "./models/entities/user.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { LoginUserDto } from "./models/dtos/loginUserDto";
-
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class UserService {
-
+    private readonly logger =  new Logger(UserService.name)
     constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-    async createUser(registerUserDto: RegisterUserDto ): Promise<UserDocument>{
-        const createdUser = new this.userModel(registerUserDto);
-        return await createdUser.save();
+    async createUser(registerUserDto: RegisterUserDto ){
+        const userSalt = await bcrypt.genSaltSync()
+        this.logger.debug(`this is user salt: ${userSalt}`)
+        registerUserDto.password = await bcrypt.hash(registerUserDto.password, userSalt)
+        registerUserDto.salt =userSalt
+        const createdUser = await new this.userModel(registerUserDto).save();
+        
+        this.logger.debug(`User created with id: ${createdUser._id}`);
     }
-    async findAllUsers(): Promise<User[]>{
+    async findAllUsers(){
         return await this.userModel.find().exec();
     }
     async findUserByIdentifier(identifier: string){
@@ -32,5 +37,6 @@ export class UserService {
         return await this.userModel.findOne({email: email}).exec();
     }
 
-    
+    //TODO implement get user bookmarks, and communities
+    // also get normal users
 }

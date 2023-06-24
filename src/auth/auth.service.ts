@@ -13,11 +13,10 @@ export class AuthService {
         private jwtService: JwtService
     ) {}
 
-    async login(loginUserDto: LoginUserDto): Promise<any> {
-        const user = await this.usersService.findUserByIdentifier(loginUserDto.identifier) || await this.usersService.findUserById(loginUserDto.identifier);
+    async login(loginUserDto: LoginUserDto) {
+        const user = await this.usersService.findUserByIdentifier(loginUserDto.identifier);
         const payload = { sub: user._id, username: user.username };
-        return {
-            access_token: await this.jwtService.signAsync(payload),
-        };
+        const accessToken = await this.jwtService.signAsync(payload);
+        return accessToken;
     }
 }
