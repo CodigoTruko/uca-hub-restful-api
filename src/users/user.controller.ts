@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Param, Post, Request, Res, Response } from "@nestjs/common";
+import { Body, Controller, Get, Logger, Param, Patch, Post, Request, Res, Response } from "@nestjs/common";
 import { RegisterUserDto } from "./models/dtos/registerUserDto";
 import { LoginUserDto } from "./models/dtos/loginUserDto";
 import { UserService } from "./user.service";
@@ -44,8 +44,8 @@ export class UserController {
 
 
     //Follow
-    @Post('/follow/:identifier')
-    followUser(@Request() req,@Response()res, @Param("identifier") identifier: string){
+    @Patch('/follow/:identifier')
+    followUser(@Request() req, @Response()res, @Param("identifier") identifier: string){
         try {
             
         } catch (error) {
