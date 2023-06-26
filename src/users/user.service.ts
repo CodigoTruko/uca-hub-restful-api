@@ -37,7 +37,7 @@ export class UserService {
     async findUserByEmail(email: string){
         return await this.userModel.findOne({email: email}).exec();
     }
-    async updateProfileByIdentifier(identifier: string ,updateUserDto: updateUserDto){
+    async updateProfileByIdentifier(identifier: string, updateUserDto: updateUserDto){
  
     }
     async addTokenToUser(identifier: string, token: string){
