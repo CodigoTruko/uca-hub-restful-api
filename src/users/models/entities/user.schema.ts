@@ -29,6 +29,10 @@ export class User {
     password: String;
     @Prop()
     salt: String;
+    @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}]})
+    follows: User[]
+    @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}]})
+    followers: User[]
     @Prop()
     tokens: String[];
     @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event"}]})

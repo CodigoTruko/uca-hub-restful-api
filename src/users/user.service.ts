@@ -5,6 +5,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { LoginUserDto } from "./models/dtos/loginUserDto";
 import * as bcrypt from "bcrypt";
+import { updateUserDto } from "./models/dtos/updateUserDto";
 
 @Injectable()
 export class UserService {
@@ -36,7 +37,16 @@ export class UserService {
     async findUserByEmail(email: string){
         return await this.userModel.findOne({email: email}).exec();
     }
+    async updateProfileById(identifier: string ,updateUserDto: updateUserDto){
+        const filter = { identifier }
+        return await this.userModel.findByIdAndUpdate(filter, )
+    }
 
+    //TODO Follow a User insert into Followers
+    // add into others followers and into the user's own follows
+    async followUser(){
+
+    }
     //TODO implement get user bookmarks, and communities
     // also get normal users
 }

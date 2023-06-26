@@ -13,9 +13,17 @@ export class AuthController{
     constructor(
         private authService: AuthService,
         private userService: UserService
-        ){}
+    ){}
 
-    //TODO: Implement Login Bussiness Logic
+
+    async validateUser(identifier: string, pass: string): Promise<any> {
+            const user = await this.userService.findUserByIdentifier(identifier);
+            if (user && user.password === pass) {
+              const { password, ...result } = user;
+              return result;
+            }
+            return null;
+    }
     @Post('login')
     async login(@Request() req, @Res() res,@Body() loginUserDto: LoginUserDto) {
         try {
@@ -44,7 +52,6 @@ export class AuthController{
             return res.status(500).json({message: 'Internal server error!'});
         }
     }
-    //TODO: Implement Register Bussiness Logic
     @Post('register')
     async register(@Res() res, @Body() registerUserDto:  RegisterUserDto){
         try {

@@ -1,30 +1,52 @@
-import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Request, Response, UseGuards} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Query, Request, Response, UseGuards} from '@nestjs/common';
 import { ApiConflictResponse, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { EventService } from './event.service';
 import { CreateEventDto } from './models/dto/createEventDto';
 import { UpdateEventDto } from './models/dto/updateEventDto';
+import { PaginationParams } from 'src/pagination/pagination.model';
+
 
 @ApiTags('Event')
 @Controller('event')
 export class EventController {
     private readonly logger = new Logger(EventController.name);
     constructor(private eventService: EventService){}
+    
 
     @Post()
     @ApiCreatedResponse({ description: 'Event created!' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    createEvent(@Request() req, @Response() res, @Body() createEventDto: CreateEventDto){
+    async createEvent(@Request() req, @Response() res, @Query() {}, @Body() createEventDto: CreateEventDto){
         try {
             this.logger.verbose('Creating Event...');
-            this.eventService.createEvent(createEventDto);
+            await this.eventService.createEvent(createEventDto);
             this.logger.verbose('Event Created!');
             
             return res.status(201).json({message: 'Event created!'});
         } catch (error) {
             this.logger.error(error);
+            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
         }
     }
     
+    @Get('/v2')
+    async findEvents(@Request() req, @Response() res, @Query() { skip, limit}: PaginationParams){
+        try {
+            const events =  await this.eventService.findAllVisibleEvents(skip, limit)
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+        }
+    }
+
+    async findFollowingEvents(){
+
+    }
+
+    async findEventsFromCommunity(){
+
+    }
+
     @Get()
     @ApiOkResponse({ description: 'Events found!' })
     @ApiNotFoundResponse({ description: 'Events not found' })
