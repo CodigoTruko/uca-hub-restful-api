@@ -37,9 +37,11 @@ export class UserService {
     async findUserByEmail(email: string){
         return await this.userModel.findOne({email: email}).exec();
     }
-    async updateProfileById(identifier: string ,updateUserDto: updateUserDto){
-        const filter = { identifier }
-        return await this.userModel.findByIdAndUpdate(filter, )
+    async updateProfileByIdentifier(identifier: string ,updateUserDto: updateUserDto){
+ 
+    }
+    async addTokenToUser(identifier: string, token: string){
+        const userFound = this.findUserByIdentifier(identifier)
     }
 
     //TODO Follow a User insert into Followers

@@ -15,15 +15,6 @@ export class AuthController{
         private userService: UserService
     ){}
 
-
-    async validateUser(identifier: string, pass: string): Promise<any> {
-            const user = await this.userService.findUserByIdentifier(identifier);
-            if (user && user.password === pass) {
-              const { password, ...result } = user;
-              return result;
-            }
-            return null;
-    }
     @Post('login')
     async login(@Request() req, @Res() res,@Body() loginUserDto: LoginUserDto) {
         try {
@@ -46,7 +37,7 @@ export class AuthController{
             const token =  await this.authService.login(loginUserDto);
             
             this.logger.verbose("Login Successful!")
-            return res.status(200).json(token)
+            return res.status(200).json({ token: token })
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: 'Internal server error!'});
