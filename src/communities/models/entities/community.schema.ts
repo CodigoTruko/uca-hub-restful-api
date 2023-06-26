@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument } from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
 
 export type CommunityDocument = HydratedDocument<Community>;
 
@@ -15,6 +15,8 @@ export class Community {
     privacy: string;
     @Prop({ default: true })
     visibility: boolean;
+    @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event'}]})
+    posts: Event[];
 }
 
 export const CommunitySchema =  SchemaFactory.createForClass(Community);
