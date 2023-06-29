@@ -58,17 +58,19 @@ export class EventService{
         return eventToUpdate; */
     }
 
-    async getFeed(id){
+    async getFeed(id, documentsToSkip = 0, limitOfDocuments?: number){
         const user = await this.userModel.find({ _id: id }).exec();
         this.logger.debug(user)
         const follows = user.map( user => user.follows)
         this.logger.debug(follows)
-        const feed = await this.eventModel.find({ author: [follows]}).sort({ createdAt: 1})
+        const feed = this.eventModel.find({ author: [follows]})
+            .sort({ createdAt: -1})
+            .skip(documentsToSkip)
             .populate("author", "name username")
-            .exec()
-        this.logger.debug(feed)
         
-        return feed;
+        if(limitOfDocuments) { feed.limit(limitOfDocuments)}
+        
+        return await feed.exec();
     }
     async deleteEvent(id: String){
         await this.eventModel.findByIdAndDelete(id);

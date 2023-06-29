@@ -47,10 +47,10 @@ export class EventController {
 
     @UseGuards(AuthGuard)
     @Get("/feed")
-    async getFeed(@Req() req: Request, @Res() res: Response){
+    async getFeed(@Req() req: Request, @Res() res: Response, @Query() {skip, limit}: PaginationParams){
         try {
             const user = req.user
-            const feed = await this.eventService.getFeed(user["sub"]);
+            const feed = await this.eventService.getFeed(user["sub"], skip, limit);
 
             return res.status(200).json({feed: feed});
         } catch (error) {
