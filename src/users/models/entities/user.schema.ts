@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument, VirtualType } from "mongoose";
-import { Community } from "src/communities/models/entities/community.schema";
-import { Event } from "src/events/models/entities/event.schema";
+import { Community } from "../../../communities/models/entities/community.schema";
+import { Event } from "../../../events/models/entities/event.schema";
 import * as bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
 import { Logger } from "@nestjs/common";

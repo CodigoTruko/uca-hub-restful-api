@@ -6,13 +6,14 @@ import { Event, EventDocument } from './models/entities/event.schema';
 import { Model } from 'mongoose';
 import { REQUEST } from '@nestjs/core';
 import {Request} from 'express'
+import { User } from 'src/users/models/entities/user.schema';
 
 @Injectable()
 export class EventService{
     private readonly logger = new Logger(EventService.name);
     constructor(
         @InjectModel(Event.name) private eventModel: Model<Event>,
-        @Inject(REQUEST) private readonly request: Request
+        @InjectModel(User.name) private userModel: Model<User>,
         ){}
     
     async createEvent(createEventDto: CreateEventDto): Promise<EventDocument>{
@@ -24,7 +25,7 @@ export class EventService{
     async findAllEvents(documentsToSkip = 0, limitOfDocuments?: number){
         const query = this.eventModel
             .find({})
-            .sort({ _id: 1 })
+            .sort({ createdAt: -1 })
             .skip(documentsToSkip);
         
         if (limitOfDocuments) {
@@ -57,6 +58,18 @@ export class EventService{
         return eventToUpdate; */
     }
 
+    async getFeed(id){
+        const user = await this.userModel.find({ _id: id }).exec();
+        this.logger.debug(user)
+        const follows = user.map( user => user.follows)
+        this.logger.debug(follows)
+        const feed = await this.eventModel.find({ author: [follows]}).sort({ createdAt: 1})
+            .populate("author", "name username")
+            .exec()
+        this.logger.debug(feed)
+        
+        return feed;
+    }
     async deleteEvent(id: String){
         await this.eventModel.findByIdAndDelete(id);
     }

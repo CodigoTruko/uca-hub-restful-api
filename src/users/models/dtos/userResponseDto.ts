@@ -1,5 +1,7 @@
 export class FindUserResponseDto {
-    id: string;
+    name: string;
+    carnet: string;
     username: string;
     email: string;
+    
 }

@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Res } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Req, Res } from "@nestjs/common";
+import { Request, Response } from "express";
 import { ApiTags } from "@nestjs/swagger";
 import { CreateCommunityDto } from "./models/dtos/createCommunityDto";
 import { CommunityService } from "./community.service";
@@ -11,7 +12,7 @@ export class CommunityController{
     constructor(private readonly communityService: CommunityService){}
 
     @Post()
-    createCommunity(@Res() res, @Body() createCommunityDto: CreateCommunityDto){
+    createCommunity(@Req() req: Request, @Res() res: Response, @Body() createCommunityDto: CreateCommunityDto){
         try {
             this.logger.verbose('Creating Community..')
             this.communityService.createCommunity(createCommunityDto);
@@ -23,7 +24,7 @@ export class CommunityController{
         }
     }
     @Get()
-    async findAllCommunities(@Res() res){
+    async findAllCommunities(@Req() req: Request, @Res() res: Response){
         try {
             this.logger.verbose('Finding All Communities...');
             const communities = await this.communityService.findAllCommunities();
@@ -41,7 +42,7 @@ export class CommunityController{
         }
     }
     @Delete(':id')
-    async deleteCommunity(@Res() res, @Param('id') id: string){
+    async deleteCommunity(@Req() req: Request, @Res() res: Response, @Param('id') id: string){
         try {
             this.logger.verbose('Deleting Community...');
             this.communityService.deleteCommunity(id);
@@ -53,7 +54,7 @@ export class CommunityController{
         }
     }
     @Get(':id')
-    findEventById(@Res() res, @Param('id') id: string){
+    findEventById(@Req() req: Request, @Res() res: Response, @Param('id') id: string){
         try {
             /* const communityFound = this.communityService.findCommunityById(id);
 
@@ -68,7 +69,7 @@ export class CommunityController{
         }
     }
     @Patch(':id')
-    toggleCommunityVisibility(@Res() res, @Param('id') id: string){
+    toggleCommunityVisibility(@Req() req: Request, @Res() res: Response,  @Param('id') id: string){
         try {
             /* const commmunityToggled = this.communityService.toggleCommunityVisibility(id);
 
@@ -82,7 +83,7 @@ export class CommunityController{
         }
     }
     @Patch(':id')
-    updateCommunity(@Res() res, @Param('id') id: string, @Body() updateCommunityDto: UpdateCommunityDto){
+    updateCommunity(@Req() req: Request, @Res() res: Response,  @Param('id') id: string, @Body() updateCommunityDto: UpdateCommunityDto){
         try {
             /* const communityUpdated = this.communityService.updateCommunity(id,updateCommunityDto);
 
