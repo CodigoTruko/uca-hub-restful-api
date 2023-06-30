@@ -60,17 +60,20 @@ export class EventService{
 
     async getFeed(id, documentsToSkip = 0, limitOfDocuments?: number){
         const user = await this.userModel.find({ _id: id }).exec();
-        this.logger.debug(user)
-        const follows = user.map( user => user.follows)
-        this.logger.debug(follows)
-        const feed = this.eventModel.find({ author: [follows]})
+        const follows = user.map( user => user.follows);
+
+        const feed1 = this.eventModel.find({ author: [follows]})
+            .sort({ createdAt: -1})
+            .populate("author", "name username");
+
+        const feed2 = this.eventModel.find({ author: [follows]})
             .sort({ createdAt: -1})
             .skip(documentsToSkip)
-            .populate("author", "name username")
+            .populate("author", "name username");
+
+        if(limitOfDocuments) { feed2.limit(limitOfDocuments)}
         
-        if(limitOfDocuments) { feed.limit(limitOfDocuments)}
-        
-        return await feed.exec();
+        return { count: await feed1.count(), results: await feed2.exec(), };
     }
     async deleteEvent(id: String){
         await this.eventModel.findByIdAndDelete(id);

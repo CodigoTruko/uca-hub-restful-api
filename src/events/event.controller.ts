@@ -4,8 +4,9 @@ import { Request, Response } from 'express';
 import { EventService } from './event.service';
 import { CreateEventDto } from './models/dto/createEventDto';
 import { UpdateEventDto } from './models/dto/updateEventDto';
-import { PaginationParams } from 'src/pagination/pagination.model';
+import { PaginationParams } from 'src/pagination/paginationParamsDto';
 import { AuthGuard } from "../auth/auth.guard";
+import { getNext, getPrevious } from 'src/utils/queryUrl.calculator';
 
 
 @ApiTags('Event')
@@ -49,10 +50,21 @@ export class EventController {
     @Get("/feed")
     async getFeed(@Req() req: Request, @Res() res: Response, @Query() {skip, limit}: PaginationParams){
         try {
+            this.logger.verbose("Fetching User's Feed...")
             const user = req.user
-            const feed = await this.eventService.getFeed(user["sub"], skip, limit);
-
-            return res.status(200).json({feed: feed});
+            const countAndFeed = await this.eventService.getFeed(user["sub"], skip, limit);
+            
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, countAndFeed.count);
+            const previous = getPrevious(fullUrl, skip, limit, countAndFeed.count);
+            console.log(fullUrl)
+            this.logger.verbose("User's Feed fetched!")
+            return res.status(200).json({
+                count: countAndFeed.count,
+                next: next,
+                previous: previous,
+                results: countAndFeed.results,
+            });
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});

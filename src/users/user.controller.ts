@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 import { RegisterUserDto } from "./models/dtos/registerUserDto";
 import { LoginUserDto } from "./models/dtos/loginUserDto";
 import { UserService } from "./user.service";
-import { User } from "src/utils/getUser.decorator";
 import { AuthGuard } from "../auth/auth.guard";
 import { CommunityService } from "src/communities/community.service";
 
