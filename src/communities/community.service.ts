@@ -28,7 +28,9 @@ export class CommunityService{
         return visibleCommunities; */
     }
 
-    findCommunityById(id: string){
+    async findCommunityByIdentifier(identifier){
+        const communityFound = await this.communityModel.findOne({ name: identifier }).exec();
+        return communityFound;
         /* const community = this.communities.find(_community => _community.id === id);
         this.logger.debug(community);
         return community; */
@@ -46,7 +48,7 @@ export class CommunityService{
     async deleteCommunity(id: String){
         await this.communityModel.findByIdAndDelete(id);
     }
-    toggleCommunityVisibility(id: string){
+    async toggleCommunityVisibility(id: string){
         /* const communityToToggle = this.findCommunityById(id);
         communityToToggle.visibility = !communityToToggle.visibility;
         this.logger.debug(communityToToggle);

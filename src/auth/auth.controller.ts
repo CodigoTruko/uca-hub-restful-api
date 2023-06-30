@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Logger, Param, Post, Request, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Logger, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { RegisterUserDto } from "../users/models/dtos/registerUserDto";
+import { Request, Response } from "express";
 import {AuthService} from "./auth.service";
 import { LoginUserDto } from "../users/models/dtos/loginUserDto";
 import { UserService } from "../users/user.service";
-import { AuthGuard } from "./auth.guard";
 import * as bcrypt from "bcrypt";
+import { AuthGuard } from "@nestjs/passport";
 
 @Controller('auth')
 export class AuthController{
@@ -16,7 +17,7 @@ export class AuthController{
     ){}
 
     @Post('login')
-    async login(@Request() req, @Res() res,@Body() loginUserDto: LoginUserDto) {
+    async login(@Req() req: Request, @Res() res: Response, @Body() loginUserDto: LoginUserDto) {
         try {
 
             this.logger.verbose("Attempting Login...")
@@ -28,7 +29,7 @@ export class AuthController{
             this.logger.verbose("Checking credentials")
             const hashed = await bcrypt.hash(loginUserDto.password, userFound.salt)
             this.logger.debug(hashed)
-            this.logger.debug(userFound.password    )
+            this.logger.debug(userFound.password)
             const isMatch = await bcrypt.compareSync(userFound.password, hashed)
             this.logger.debug(isMatch)
             if(isMatch) return res.status(401).json({message: "Credentials do not match!"})
@@ -44,7 +45,7 @@ export class AuthController{
         }
     }
     @Post('register')
-    async register(@Res() res, @Body() registerUserDto:  RegisterUserDto){
+    async register(@Req() req: Request, @Res() res: Response, @Body() registerUserDto:  RegisterUserDto){
         try {
             this.logger.verbose('User trying to register...');
             const userFound = await this.userService.findUserByIdentifier(registerUserDto.email) || await this.userService.findUserByIdentifier(registerUserDto.username);
@@ -60,9 +61,23 @@ export class AuthController{
             return res.status(500).json({message: "Internal server error!"});
         }
     }
+    /* @HttpCode(HttpStatus.OK)
+    @Post('login')
+    signIn(@Body() loginUserDto: LoginUserDto) {
+        return this.authService.signIn(loginUserDto.identifier, loginUserDto.password);
+    } */
+
     /* @UseGuards(AuthGuard)
     @Get('profile')
-    getProfile(@Request() req) {
-        return req.user;
+    async getProfile(@Req() req: Request, @Res() res: Response) {
+        try {
+            const user = req.user
+            const profile = await this.userService.findUserByIdentifier(user["username"]);
+
+            return res.status(200).json(profile)
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Internal server error!"});
+        }
     } */
 }

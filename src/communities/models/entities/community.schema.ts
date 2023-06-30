@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument } from "mongoose";
+import { User } from "../../../users/models/entities/user.schema";
 
 export type CommunityDocument = HydratedDocument<Community>;
 
@@ -17,6 +18,8 @@ export class Community {
     visibility: boolean;
     @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event'}]})
     posts: Event[];
+    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User"}]})
+    subs: User[];
 }
 
 export const CommunitySchema =  SchemaFactory.createForClass(Community);

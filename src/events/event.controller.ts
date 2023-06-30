@@ -1,9 +1,12 @@
-import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Query, Request, Response, UseGuards} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Query, Req, Res, UseGuards} from '@nestjs/common';
 import { ApiConflictResponse, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 import { EventService } from './event.service';
 import { CreateEventDto } from './models/dto/createEventDto';
 import { UpdateEventDto } from './models/dto/updateEventDto';
-import { PaginationParams } from 'src/pagination/pagination.model';
+import { PaginationParams } from 'src/pagination/paginationParamsDto';
+import { AuthGuard } from "../auth/auth.guard";
+import { getNext, getPrevious } from 'src/utils/queryUrl.calculator';
 
 
 @ApiTags('Event')
@@ -16,7 +19,7 @@ export class EventController {
     @Post()
     @ApiCreatedResponse({ description: 'Event created!' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    async createEvent(@Request() req, @Response() res, @Query() {}, @Body() createEventDto: CreateEventDto){
+    async createEvent(@Req() req: Request, @Res() res: Response, @Query() {}, @Body() createEventDto: CreateEventDto){
         try {
             this.logger.verbose('Creating Event...');
             await this.eventService.createEvent(createEventDto);
@@ -29,18 +32,43 @@ export class EventController {
         }
     }
     
-    @Get('/v2')
-    async findEvents(@Request() req, @Response() res, @Query() { skip, limit}: PaginationParams){
+    @Get("/v2")
+    async findEvents(@Req() req: Request, @Res() res: Response, @Query() { skip, limit }: PaginationParams){
         try {
             const events =  await this.eventService.findAllVisibleEvents(skip, limit)
+
+            
+
+            return res.status(200).json();
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
         }
     }
 
-    async findFollowingEvents(){
-
+    @UseGuards(AuthGuard)
+    @Get("/feed")
+    async getFeed(@Req() req: Request, @Res() res: Response, @Query() {skip, limit}: PaginationParams){
+        try {
+            this.logger.verbose("Fetching User's Feed...")
+            const user = req.user
+            const countAndFeed = await this.eventService.getFeed(user["sub"], skip, limit);
+            
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, countAndFeed.count);
+            const previous = getPrevious(fullUrl, skip, limit, countAndFeed.count);
+            console.log(fullUrl)
+            this.logger.verbose("User's Feed fetched!")
+            return res.status(200).json({
+                count: countAndFeed.count,
+                next: next,
+                previous: previous,
+                results: countAndFeed.results,
+            });
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+        }
     }
 
     async findEventsFromCommunity(){
@@ -51,7 +79,7 @@ export class EventController {
     @ApiOkResponse({ description: 'Events found!' })
     @ApiNotFoundResponse({ description: 'Events not found' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    async findAllEvents(@Response() res){
+    async findAllEvents(@Req() req: Request, @Res() res: Response,){
         try {
             this.logger.verbose('Finding all events...');
             const events = await this.eventService.findAllEvents()
@@ -70,7 +98,7 @@ export class EventController {
     @ApiOkResponse({ description: 'Event found!' })
     @ApiNotFoundResponse({ description: 'Event not found' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    findEventById(@Param('id') id: string, @Response() res){
+    findEventById(@Param('id') id: string, @Req() req: Request, @Res() res: Response){
 
         try {
             const eventToAdd = this.eventService.findEventById(id);
@@ -86,7 +114,7 @@ export class EventController {
     }
     
     @Patch(":id")
-    toggleEventVisibility(@Param('id') id: string, @Response() res){
+    toggleEventVisibility(@Param('id') id: string, @Req() req: Request, @Res() res: Response){
         try {
             const eventToToggle = this.eventService.findEventById(id);
 
@@ -101,7 +129,7 @@ export class EventController {
     }
 
     @Patch(":id")
-    updateEvent(@Param('id') id, @Body() updateEventDto: UpdateEventDto, @Response() res){
+    updateEvent(@Param('id') id, @Body() updateEventDto: UpdateEventDto, @Req() req: Request, @Res() res: Response){
         try {
             const eventToUpdate = this.eventService.findEventById(id);
 
@@ -120,7 +148,7 @@ export class EventController {
     }
 
     @Delete(":id")
-    async deleteEvent(@Param('id') id: string, @Response() res){
+    async deleteEvent(@Param('id') id: string, @Req() req: Request, @Res() res: Response,){
         try {
             this.logger.verbose('Deleting event...');
             await this.eventService.deleteEvent(id);

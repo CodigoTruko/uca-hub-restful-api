@@ -6,10 +6,14 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { ProgramModule } from "./programs/program.module";
 import { FacultyModule } from "./faculties/faculty.module";
 import { AuthModule } from "./auth/auth.module";
-
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: '.development.env',
+      isGlobal: true
+    }),
     MongooseModule.forRoot('mongodb://localhost:6152/uca-hub'),
     EventModule,
     CommunityModule,
