@@ -6,15 +6,24 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { ProgramModule } from "./programs/program.module";
 import { FacultyModule } from "./faculties/faculty.module";
 import { AuthModule } from "./auth/auth.module";
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import Variables from "./config/configuration"
+import configuration from "./config/configuration";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.development.env',
+      envFilePath: '.env',
+      load: [configuration],
       isGlobal: true
     }),
-    MongooseModule.forRoot('mongodb://localhost:6152/uca-hub'),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        uri: config.get<string>('MONGODB_URI'), // Loaded from .ENV
+      })
+    }),
     EventModule,
     CommunityModule,
     CategoryModule,
