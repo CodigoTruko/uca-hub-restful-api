@@ -35,6 +35,49 @@ export class UserController {
     }
 
     @UseGuards(AuthGuard)
+    @Get("/subscriptions")
+    async getSubscriptions(@Req() req: Request, @Res() res: Response){
+        try {
+            const user =  await this.userService.getMyProfile(req.user["sub"])
+
+            return res.status(200).json({ followers: user.followers})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({error: "Internal server error!"})
+        }
+
+    }
+
+
+    @UseGuards(AuthGuard)
+    @Get("/follows")
+    async getFollows(@Req() req: Request, @Res() res: Response){
+        try {
+            const user =  await this.userService.getMyProfile(req.user["sub"])
+
+            return res.status(200).json({ followers: user.follows})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({error: "Internal server error!"})
+        }
+
+    }
+
+    @UseGuards(AuthGuard)
+    @Get("/followers")
+    async getFollowers(@Req() req: Request, @Res() res: Response){
+        try {
+            const user =  await this.userService.getMyProfile(req.user["sub"])
+
+            return res.status(200).json({ followers: user.followers})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({error: "Internal server error!"})
+        }
+
+    }
+
+    @UseGuards(AuthGuard)
     @Get('/profile')
     async findMyUser(@Req() req: Request, @Res() res: Response){
         try {

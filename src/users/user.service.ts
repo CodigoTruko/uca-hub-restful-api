@@ -98,7 +98,11 @@ export class UserService {
     }
 
     async getMyProfile(id){
-        const myUser = await this.userModel.findOne({_id: id}).exec();
+        const myUser = await this.userModel.findOne({_id: id})
+            .populate("followers", "name carnet username")
+            .populate("follows", "name carnet username")
+            .populate("subscriptions", "name")
+            .exec();
 
         return myUser
     }

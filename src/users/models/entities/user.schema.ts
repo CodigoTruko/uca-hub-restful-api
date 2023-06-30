@@ -39,6 +39,8 @@ export class User {
     bookmarks: Event[];
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "Community"}]})
     subscriptions: Community[];
+    @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event"}]})
+    posts: Event[]
 /*     encryptPassword: Function;
     makeSalt: Function;
     comparePassword: Function; */
