@@ -16,6 +16,46 @@ export class AuthController{
         private userService: UserService
     ){}
 
+    @Post("/v2/register")
+    async registerv2(@Req() req: Request, @Res() res: Response, @Body() user: RegisterUserDto){
+        try {
+            this.logger.verbose('User trying to register...');
+            const userFound = await this.userService.findUserByIdentifier(user.email) || await this.userService.findUserByIdentifier(user.username);
+            
+            if(userFound) return res.status(409).json({message: 'User already exists!'});
+            
+
+            await this.userService.createUser2(user);
+            this.logger.verbose("User registered!");
+            return res.status(201).json({ message: "User Registered!"})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({error: "Internal server error!"})
+        }
+    }
+    @Post("/v2/login")
+    async loginv2(@Req() req: Request, @Res() res: Response, @Body() user: LoginUserDto){
+        try {
+            const userFound = await this.userService.findUserByIdentifier(user.identifier);
+            if(!userFound) return res.status(404).json({ error: "User not found!"})
+
+            this.logger.verbose("Checking credentials")
+            this.logger.debug(userFound.password)
+            this.logger.debug(await bcrypt.hash(user.password, userFound.salt))
+
+            if(userFound.password != await bcrypt.hash(user.password, userFound.salt)) return res.status(401).json({error: "Unauthorized!"})
+
+            const token =  await this.authService.login(user);
+            
+            this.logger.verbose("Login Successful!")
+            return res.status(200).json({ token: token })
+
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({error: "Internal server error!"})
+        }
+    }
+
     @Post('login')
     async login(@Req() req: Request, @Res() res: Response, @Body() loginUserDto: LoginUserDto) {
         try {
