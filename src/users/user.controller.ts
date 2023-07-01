@@ -5,6 +5,7 @@ import { LoginUserDto } from "./models/dtos/loginUserDto";
 import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { CommunityService } from "src/communities/community.service";
+import * as bcrypt from "bcrypt";
 
 @Controller('user')
 export class UserController {
@@ -13,6 +14,9 @@ export class UserController {
     constructor(
         private userService: UserService,
         private communityService: CommunityService) {}
+    
+
+    
 
     //Follow
     @UseGuards(AuthGuard)
@@ -30,11 +34,11 @@ export class UserController {
             return res.status(200).json({ message: "Follow has been toggled"})
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({error: "Internal server error!"})
+            return res.status(500).json({error: "Internal server error!"});
         }
     }
 
-    @UseGuards(AuthGuard)
+    // @UseGuards(AuthGuard)
     @Get("/subscriptions")
     async getSubscriptions(@Req() req: Request, @Res() res: Response){
         try {
@@ -101,7 +105,7 @@ export class UserController {
         }
     }
 
-    @Get('/all')
+    /* @Get('/all')
     async findAllUsers(@Req() req: Request, @Res() res: Response){
         try {
             
@@ -109,7 +113,7 @@ export class UserController {
             this.logger.error(error);
             return res.status(500).json({error: "Internal server error!"});
         }
-    }
+    } */
     
     @UseGuards(AuthGuard)
     @Get('/bookmarks')
@@ -150,5 +154,5 @@ export class UserController {
             this.logger.error(error);
             return res.status(500).json({message: "Internal server error!"});
         }
-    }   
+    }
 }
