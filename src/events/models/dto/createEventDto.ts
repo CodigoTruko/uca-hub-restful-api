@@ -9,8 +9,5 @@ export class CreateEventDto {
     @ApiProperty()
     @IsNotEmpty()
     description: string;
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsMongoId()
-    author: Types.ObjectId
+    author: Types.ObjectId;
 }
