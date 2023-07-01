@@ -23,7 +23,7 @@ export class ProgramService {
     }
 
     async findAllPrograms() {
-        const programs = await this.programModel.find().exec();
+        const programs = await this.programModel.find().populate('faculty', 'name').exec();
         return programs;
     }
 

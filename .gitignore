@@ -1,6 +1,15 @@
+#oroject shit
+.development.env
+.dockerignore
+.docker-compose.yml
+Dockerfile
+
 # compiled output
 /dist
 /node_modules
+
+
+
 
 # Logs
 logs

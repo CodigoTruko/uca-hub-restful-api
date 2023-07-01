@@ -12,4 +12,5 @@ export class RegisterUserDto {
     email: string;
     @IsNotEmpty()
     password: string;
+    salt: string;
 }

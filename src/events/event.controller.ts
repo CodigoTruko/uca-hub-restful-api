@@ -1,36 +1,149 @@
-import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Req, Res} from '@nestjs/common';
-import { ApiBadRequestResponse, ApiConflictResponse, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Query, Req, Res, UseGuards} from '@nestjs/common';
+import { ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 import { EventService } from './event.service';
 import { CreateEventDto } from './models/dto/createEventDto';
 import { UpdateEventDto } from './models/dto/updateEventDto';
+import { PaginationParams } from 'src/pagination/paginationParamsDto';
+import { AuthGuard } from "../auth/auth.guard";
+import { getNext, getPrevious } from 'src/utils/queryUrl.calculator';
+
 
 @ApiTags('Event')
 @Controller('event')
 export class EventController {
     private readonly logger = new Logger(EventController.name);
     constructor(private eventService: EventService){}
-
-    @Post()
+    
+    @UseGuards(AuthGuard)
+    @Post("/community/:name")
     @ApiCreatedResponse({ description: 'Event created!' })
-    @ApiConflictResponse({ description: 'There is an error while creating your event. Try again later :)' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    createEvent(@Body() createEventDto: CreateEventDto, @Res() res){
+    async createCommunityEvent(@Req() req: Request, @Res() res: Response, @Param("name") name: string, @Body() createEventDto: CreateEventDto){
         try {
-            this.logger.verbose('Creating Event...');
-            this.eventService.createEvent(createEventDto);
-            this.logger.verbose('Event Created!');
+            this.logger.verbose('Creating Community Event...');
+            createEventDto.author = req.user["sub"];
+            await this.eventService.createCommunityEvent(createEventDto, name);
+            this.logger.verbose('Community Event Created!');
             
             return res.status(201).json({message: 'Event created!'});
         } catch (error) {
             this.logger.error(error);
+            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
         }
     }
+    //TODO Migrate this endpoint to community controller
+    @Get("/community/:name")
+    async findEventsFromCommunity(@Req() req: Request, @Res() res: Response, @Param("name") name: string, @Query() { skip, limit }: PaginationParams){
+        try {
+            this.logger.verbose("Fetching Community's Events...");
+            const countAndResults = await this.eventService.getEventsFromCommunity(name, skip, limit);
+
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, countAndResults.count);
+            const previous = getPrevious(fullUrl, skip, limit, countAndResults.count);
+
+            this.logger.verbose("Community's Events fetched!");
+            return res.status(200).json({
+                count: countAndResults.count,
+                next: next,
+                previous: previous,
+                results: countAndResults.results
+            });
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Post("/profile")
+    async createProfileEvent(@Req() req: Request, @Res() res: Response, @Body() event: CreateEventDto,){
+        try {
+            this.logger.verbose("Creating Profile Event...")
+            event.author = req.user["sub"]
+            
+            await this.eventService.createProfileEvent(event, req.user["sub"]);
+            this.logger.verbose("Profile Event Created!");
+            return res.status(200).json({ message: "Event Created!" })
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
+    //TODO Migrate endpoint to User Controller
+    @UseGuards(AuthGuard)
+    @Get("/profile")
+    async getEventsFromProfile(@Req() req: Request, @Res() res: Response,  @Query() { skip, limit }: PaginationParams){
+        try {
+            this.logger.verbose("Fetching User's Profile Events...")
+
+            const countAndResults = await this.eventService.getEventsFromProfile(req.user["sub"], skip, limit)
+
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, countAndResults.count);
+            const previous = getPrevious(fullUrl, skip, limit, countAndResults.count);
+
+            this.logger.verbose("User's Profile Events Fetched!")
+
+            return res.status(200).json({
+                count: countAndResults.count,
+                next: next,
+                previous: previous,
+                results: countAndResults.results
+            })
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
+    @Get("/v2")
+    async findEvents(@Req() req: Request, @Res() res: Response, @Query() { skip, limit }: PaginationParams){
+        try {
+            const events =  await this.eventService.findAllVisibleEvents(skip, limit)
+
+            
+
+            return res.status(200).json();
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Get("/feed")
+    async getFeed(@Req() req: Request, @Res() res: Response, @Query() {skip, limit}: PaginationParams){
+        try {
+            this.logger.verbose("Fetching User's Feed...")
+            const user = req.user
+            const countAndFeed = await this.eventService.getFeed(user["sub"], skip, limit);
+            
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, countAndFeed.count);
+            const previous = getPrevious(fullUrl, skip, limit, countAndFeed.count);
+            this.logger.verbose("User's Feed fetched!")
+            return res.status(200).json({
+                count: countAndFeed.count,
+                next: next,
+                previous: previous,
+                results: countAndFeed.results,
+            });
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+        }
+    }
+
+
 
     @Get()
     @ApiOkResponse({ description: 'Events found!' })
     @ApiNotFoundResponse({ description: 'Events not found' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    async findAllEvents(@Res() res){
+    async findAllEvents(@Req() req: Request, @Res() res: Response, @Query() { skip, limit}: PaginationParams){
         try {
             this.logger.verbose('Finding all events...');
             const events = await this.eventService.findAllEvents()
@@ -49,7 +162,7 @@ export class EventController {
     @ApiOkResponse({ description: 'Event found!' })
     @ApiNotFoundResponse({ description: 'Event not found' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    findEventById(@Param('id') id: string, @Res() res){
+    findEventById(@Param('id') id: string, @Req() req: Request, @Res() res: Response){
 
         try {
             const eventToAdd = this.eventService.findEventById(id);
@@ -65,7 +178,7 @@ export class EventController {
     }
     
     @Patch(":id")
-    toggleEventVisibility(@Param('id') id: string, @Res() res){
+    toggleEventVisibility(@Param('id') id: string, @Req() req: Request, @Res() res: Response){
         try {
             const eventToToggle = this.eventService.findEventById(id);
 
@@ -80,7 +193,7 @@ export class EventController {
     }
 
     @Patch(":id")
-    updateEvent(@Param('id') id, @Body() updateEventDto: UpdateEventDto, @Res() res){
+    updateEvent(@Param('id') id, @Body() updateEventDto: UpdateEventDto, @Req() req: Request, @Res() res: Response){
         try {
             const eventToUpdate = this.eventService.findEventById(id);
 
@@ -99,7 +212,7 @@ export class EventController {
     }
 
     @Delete(":id")
-    async deleteEvent(@Param('id') id: string, @Res() res){
+    async deleteEvent(@Param('id') id: string, @Req() req: Request, @Res() res: Response,){
         try {
             this.logger.verbose('Deleting event...');
             await this.eventService.deleteEvent(id);

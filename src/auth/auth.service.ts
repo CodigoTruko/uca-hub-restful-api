@@ -9,22 +9,32 @@ export class AuthService {
     private readonly logger = new Logger(AuthService.name);
 
     constructor(
-        private usersService: UserService,
+        private userService: UserService,
         private jwtService: JwtService
     ) {}
 
-    async signIn(loginUserDto: LoginUserDto): Promise<any> {
-        const user = await this.usersService.findUserByIdentifier(loginUserDto.identifier) || await this.usersService.findUserById(loginUserDto.identifier);
-        const { password, ...result } = user;
+    async login(loginUserDto: LoginUserDto) {
+        const user = await this.userService.findUserByIdentifier(loginUserDto.identifier);
+        const payload = { sub: user._id, username: user.username };
+        const accessToken = await this.jwtService.signAsync(payload);
+        return accessToken;
+    }
+    async signIn(username, pass) {
+        const user = await this.userService.findUserByUsername(username);
+        if (user?.password !== pass) {
+          throw new UnauthorizedException();
+        }
         const payload = { sub: user._id, username: user.username };
         return {
-            access_token: await this.jwtService.signAsync(payload),
+          access_token: await this.jwtService.signAsync(payload),
         };
-    }
-    
-    async register(registerUserDto: RegisterUserDto): Promise<any>{
-        const user = await this.usersService.registerUser(registerUserDto);
-        const {password, ...result} = user;
-        return result;
-    }
+      }
+    async validateUser(identifier: string, pass: string): Promise<any> {
+        const user = await this.userService.findUserByIdentifier(identifier);
+        if (user && user.password === pass) {
+          const { password, ...result } = user;
+          return result;
+        }
+        return null;
+  }
 }

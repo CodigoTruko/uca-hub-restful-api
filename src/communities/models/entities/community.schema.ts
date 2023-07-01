@@ -1,9 +1,15 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument } from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
+import { User } from "../../../users/models/entities/user.schema";
 
 export type CommunityDocument = HydratedDocument<Community>;
 
-@Schema({timestamps: true})
+@Schema({
+    timestamps: true,
+    toJSON: {
+        virtuals: true,
+      },
+})
 export class Community {
     @Prop({required: true})
     name: string;
@@ -15,6 +21,17 @@ export class Community {
     privacy: string;
     @Prop({ default: true })
     visibility: boolean;
+    @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event'}]})
+    posts: Event[];
+    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User"}]})
+    subs: User[];
+    postsCount;
 }
 
-export const CommunitySchema =  SchemaFactory.createForClass(Community);
+const CommunitySchema =  SchemaFactory.createForClass(Community);
+CommunitySchema.virtual("postsCount")
+    .get(function(this: CommunityDocument){
+        return this.posts.length;
+})
+
+export { CommunitySchema };

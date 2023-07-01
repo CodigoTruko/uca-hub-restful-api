@@ -1,3 +1,3 @@
 export const jwtConstants = {
-    secret: '',
-  };
+    secret: 'Seguimos con los versos perversos demuestro a todos que ejerzo. De chico raro, con descaro, hijo de Amparo y de un tuerto',
+};
