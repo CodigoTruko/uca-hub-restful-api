@@ -41,12 +41,19 @@ export class User {
     subscriptions: Community[];
     @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event"}]})
     posts: Event[]
+    postsCount;
 /*     encryptPassword: Function;
     makeSalt: Function;
     comparePassword: Function; */
 }
 
 const UserSchema = SchemaFactory.createForClass(User)
+
+UserSchema.virtual("postsCount")
+    .get(function(this: UserDocument){
+        return this.posts.length;
+})
+
 /* 
 UserSchema.methods.encryptPassword = async function(password){
     const logger = new Logger(User.name)

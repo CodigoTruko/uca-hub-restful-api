@@ -32,7 +32,73 @@ export class EventController {
             return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
         }
     }
-    
+    //TODO Migrate this endpoint to community controller
+    @Get("/community/:name")
+    async findEventsFromCommunity(@Req() req: Request, @Res() res: Response, @Param("name") name: string, @Query() { skip, limit }: PaginationParams){
+        try {
+            this.logger.verbose("Fetching Community's Events...");
+            const countAndResults = await this.eventService.getEventsFromCommunity(name, skip, limit);
+
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, countAndResults.count);
+            const previous = getPrevious(fullUrl, skip, limit, countAndResults.count);
+
+            this.logger.verbose("Community's Events fetched!");
+            return res.status(200).json({
+                count: countAndResults.count,
+                next: next,
+                previous: previous,
+                results: countAndResults.results
+            });
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Post("/profile")
+    async createProfileEvent(@Req() req: Request, @Res() res: Response, @Body() event: CreateEventDto,){
+        try {
+            this.logger.verbose("Creating Profile Event...")
+            event.author = req.user["sub"]
+            
+            await this.eventService.createProfileEvent(event, req.user["sub"]);
+            this.logger.verbose("Profile Event Created!");
+            return res.status(200).json({ message: "Event Created!" })
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
+    //TODO Migrate endpoint to User Controller
+    @UseGuards(AuthGuard)
+    @Get("/profile")
+    async getEventsFromProfile(@Req() req: Request, @Res() res: Response,  @Query() { skip, limit }: PaginationParams){
+        try {
+            this.logger.verbose("Fetching User's Profile Events...")
+
+            const countAndResults = await this.eventService.getEventsFromProfile(req.user["sub"], skip, limit)
+
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, countAndResults.count);
+            const previous = getPrevious(fullUrl, skip, limit, countAndResults.count);
+
+            this.logger.verbose("User's Profile Events Fetched!")
+
+            return res.status(200).json({
+                count: countAndResults.count,
+                next: next,
+                previous: previous,
+                results: countAndResults.results
+            })
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
     @Get("/v2")
     async findEvents(@Req() req: Request, @Res() res: Response, @Query() { skip, limit }: PaginationParams){
         try {
@@ -71,28 +137,7 @@ export class EventController {
         }
     }
 
-    @Get("/community/:name")
-    async findEventsFromCommunity(@Req() req: Request, @Res() res: Response, @Param("name") name: string, @Query() { skip, limit }: PaginationParams){
-        try {
-            this.logger.verbose("Fetching Community's Events...");
-            const countAndResults = await this.eventService.getEventsFromCommunity(name, skip, limit);
 
-            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
-            const next = getNext(fullUrl, skip, limit, countAndResults.count);
-            const previous = getPrevious(fullUrl, skip, limit, countAndResults.count);
-
-            this.logger.verbose("Community's Events fetched!");
-            return res.status(200).json({
-                count: countAndResults.count,
-                next: next,
-                previous: previous,
-                results: countAndResults.results
-            });
-        } catch (error) {
-            this.logger.error(error);
-            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
-        }
-    }
 
     @Get()
     @ApiOkResponse({ description: 'Events found!' })
