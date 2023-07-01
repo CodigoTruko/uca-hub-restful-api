@@ -42,9 +42,9 @@ export class User {
     @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event"}]})
     posts: Event[]
     postsCount;
-/*     encryptPassword: Function;
-    makeSalt: Function;
-    comparePassword: Function; */
+    genSalt;
+    hash;
+    compare;
 }
 
 const UserSchema = SchemaFactory.createForClass(User)
@@ -52,7 +52,25 @@ const UserSchema = SchemaFactory.createForClass(User)
 UserSchema.virtual("postsCount")
     .get(function(this: UserDocument){
         return this.posts.length;
-})
+    });
+
+UserSchema.virtual("genSalt")
+    .get(async function(this: UserDocument){
+        return await bcrypt.genSalt()
+    });
+
+UserSchema.virtual("hash")
+    .set(function(password){
+        const hash = bcrypt.hashSync(password, this.salt)
+        this.set({
+            password: hash
+        })
+});
+
+UserSchema.virtual("compare")
+    .get(async function(this: UserDocument, password){
+        return await bcrypt.compare(password, this.password)
+});
 
 /* 
 UserSchema.methods.encryptPassword = async function(password){

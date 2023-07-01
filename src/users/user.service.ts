@@ -24,6 +24,20 @@ export class UserService {
         
         this.logger.debug(`User created with id: ${createdUser._id}`);
     }
+
+    async createUser2(registerUserDto: RegisterUserDto ){
+        const createdUser = new this.userModel({
+            name: registerUserDto.name,
+            carnet: registerUserDto.carnet,
+            username: registerUserDto.username,
+            email: registerUserDto.email,
+        });
+        createdUser.salt = await createdUser.genSalt
+        createdUser.hash = registerUserDto.password
+        this.logger.debug(createdUser);
+        createdUser.save()
+        this.logger.debug(`User created with id: ${createdUser._id}`);
+    }
     async findAllUsers(){
         return await this.userModel.find().exec();
     }

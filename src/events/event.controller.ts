@@ -109,7 +109,7 @@ export class EventController {
             return res.status(200).json();
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
@@ -133,7 +133,7 @@ export class EventController {
             });
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
@@ -154,7 +154,7 @@ export class EventController {
             return res.status(200).json(events);
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
@@ -173,7 +173,7 @@ export class EventController {
 
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
     
@@ -188,7 +188,7 @@ export class EventController {
 
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
@@ -207,7 +207,7 @@ export class EventController {
 
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
@@ -219,7 +219,7 @@ export class EventController {
             return res.status(200).json({message: 'Event deleted!'});
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 }
