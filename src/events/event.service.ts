@@ -7,6 +7,7 @@ import { Model } from 'mongoose';
 import { REQUEST } from '@nestjs/core';
 import {Request} from 'express'
 import { User } from 'src/users/models/entities/user.schema';
+import { Community } from 'src/communities/models/entities/community.schema';
 
 @Injectable()
 export class EventService{
@@ -14,12 +15,15 @@ export class EventService{
     constructor(
         @InjectModel(Event.name) private eventModel: Model<Event>,
         @InjectModel(User.name) private userModel: Model<User>,
+        @InjectModel(Community.name) private communityModel: Model<Community>,
         ){}
     
-    async createEvent(createEventDto: CreateEventDto): Promise<EventDocument>{
-        const createdEvent = new this.eventModel(createEventDto);
+    async createCommunityEvent(createEventDto: CreateEventDto, name){
+        
+        const createdEvent = await new this.eventModel(createEventDto).save();
         this.logger.log(createdEvent);
-        return await createdEvent.save();
+        const communityUpdated =  await this.communityModel.updateOne({name: name}, { $push: { posts: { _id: createdEvent._id }}})
+        this.logger.warn(communityUpdated)
     }
 
     async findAllEvents(documentsToSkip = 0, limitOfDocuments?: number){
@@ -47,33 +51,35 @@ export class EventService{
     }
 
     async updateEvent(id: String, updateEventDto: UpdateEventDto){
-        /* const {title, description, category, visibility} = updateEventDto;
-        const eventToUpdate = this.events.find(_event => _event.id == id);
-
-        eventToUpdate.title = title;
-        eventToUpdate.description = description;
-        eventToUpdate.category = category;
-        eventToUpdate.visibility = visibility;
-
-        return eventToUpdate; */
     }
 
     async getFeed(id, documentsToSkip = 0, limitOfDocuments?: number){
         const user = await this.userModel.find({ _id: id }).exec();
         const follows = user.map( user => user.follows);
 
-        const feed1 = this.eventModel.find({ author: [follows]})
+        const feedCount = this.eventModel.find({ author: [follows]})
             .sort({ createdAt: -1})
             .populate("author", "name username");
 
-        const feed2 = this.eventModel.find({ author: [follows]})
+        const feedResults = this.eventModel.find({ author: [follows]})
             .sort({ createdAt: -1})
             .skip(documentsToSkip)
             .populate("author", "name username");
 
-        if(limitOfDocuments) { feed2.limit(limitOfDocuments)}
+        if(limitOfDocuments) { feedResults.limit(limitOfDocuments)}
         
-        return { count: await feed1.count(), results: await feed2.exec(), };
+        return { count: await feedCount.count(), results: await feedResults.exec(), };
+    }
+
+    async getEventsFromCommunity(name, documentsToSkip = 0, limitOfDocuments = 20){
+        const communityPostsToCount = await this.communityModel.findOne({ name: name });
+        
+        const results =  await this.communityModel.findOne({name: name}, { posts: { $slice:[documentsToSkip, limitOfDocuments+documentsToSkip ] } })
+            .sort({ createdAt: -1})
+            .populate("posts", "title description author" );
+        
+
+        return { count: communityPostsToCount.postsCount, results: results} ;
     }
     async deleteEvent(id: String){
         await this.eventModel.findByIdAndDelete(id);
