@@ -108,13 +108,12 @@ export class UserController {
     @UseGuards(AuthGuard)
     @Get('/bookmarks')
     async getUserBookmarks(@Req() req: Request, @Res() res: Response){
-        //TODO
         try {
             this.logger.verbose("Fetching Users Bookmarks!");
             const user = await this.userService.getMyProfile(req.user["sub"]);
 
             this.logger.verbose("Users Bookmarks Fetched!");
-            return res.status(200).json({ subscriptions: user.subscriptions})
+            return res.status(200).json({ subscriptions: user.bookmarks})
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({error: "Internal server error!"});

@@ -7,13 +7,16 @@ import { UpdateEventDto } from './models/dto/updateEventDto';
 import { PaginationParams } from 'src/pagination/paginationParamsDto';
 import { AuthGuard } from "../auth/auth.guard";
 import { getNext, getPrevious } from 'src/utils/queryUrl.calculator';
+import { UserService } from 'src/users/user.service';
 
 
 @ApiTags('Event')
 @Controller('event')
 export class EventController {
     private readonly logger = new Logger(EventController.name);
-    constructor(private eventService: EventService){}
+    constructor(
+        private eventService: EventService,
+        private userService: UserService){}
     
     @UseGuards(AuthGuard)
     @Post("/community/:name")
@@ -99,9 +102,12 @@ export class EventController {
         }
     }
 
-    async getEventsFromUser(@Req() req: Request, @Res() res: Response,  @Query() { skip, limit }: PaginationParams){
+    @UseGuards(AuthGuard)
+    @Get("/:username")
+    async getEventsFromUser(@Req() req: Request, @Res() res: Response, @Param("identifier") username: string,  @Query() { skip, limit }: PaginationParams){
         try {
-            
+            this.logger.verbose("Fetching User's Events")
+            const userFound = await this.userService
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
