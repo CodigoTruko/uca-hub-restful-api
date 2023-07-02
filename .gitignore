@@ -3,6 +3,7 @@
 .dockerignore
 .docker-compose.yml
 Dockerfile
+.env
 
 # compiled output
 /dist

@@ -24,6 +24,20 @@ export class UserService {
         
         this.logger.debug(`User created with id: ${createdUser._id}`);
     }
+
+    async createUser2(registerUserDto: RegisterUserDto ){
+        const createdUser = new this.userModel({
+            name: registerUserDto.name,
+            carnet: registerUserDto.carnet,
+            username: registerUserDto.username,
+            email: registerUserDto.email,
+        });
+        createdUser.salt = await createdUser.genSalt
+        createdUser.hash = registerUserDto.password
+        this.logger.debug(createdUser);
+        createdUser.save()
+        this.logger.debug(`User created with id: ${createdUser._id}`);
+    }
     async findAllUsers(){
         return await this.userModel.find().exec();
     }
@@ -49,9 +63,6 @@ export class UserService {
         const userTokens = userFound.tokens.concat(newToken)
         userFound.tokens = userTokens
     }
-
-    //TODO Follow a User insert into Followers
-    // add into others followers and into the user's own follows
 
     //Works with params being the usernames of the people within the interaction
     async followUser(toFollow, follower){

@@ -7,13 +7,16 @@ import { UpdateEventDto } from './models/dto/updateEventDto';
 import { PaginationParams } from 'src/pagination/paginationParamsDto';
 import { AuthGuard } from "../auth/auth.guard";
 import { getNext, getPrevious } from 'src/utils/queryUrl.calculator';
+import { UserService } from 'src/users/user.service';
 
 
 @ApiTags('Event')
 @Controller('event')
 export class EventController {
     private readonly logger = new Logger(EventController.name);
-    constructor(private eventService: EventService){}
+    constructor(
+        private eventService: EventService,
+        private userService: UserService){}
     
     @UseGuards(AuthGuard)
     @Post("/community/:name")
@@ -65,7 +68,7 @@ export class EventController {
             
             await this.eventService.createProfileEvent(event, req.user["sub"]);
             this.logger.verbose("Profile Event Created!");
-            return res.status(200).json({ message: "Event Created!" })
+            return res.status(201).json({ message: "Event Created!" })
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
@@ -95,23 +98,22 @@ export class EventController {
             })
         } catch (error) {
             this.logger.error(error);
+            return res.status(500).json({ message: "Oops! Something went wrong. Try again later :)" });
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Get("/:username")
+    async getEventsFromUser(@Req() req: Request, @Res() res: Response, @Param("identifier") username: string,  @Query() { skip, limit }: PaginationParams){
+        try {
+            this.logger.verbose("Fetching User's Events")
+            const userFound = await this.userService
+        } catch (error) {
+            this.logger.error(error);
             return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
-    @Get("/v2")
-    async findEvents(@Req() req: Request, @Res() res: Response, @Query() { skip, limit }: PaginationParams){
-        try {
-            const events =  await this.eventService.findAllVisibleEvents(skip, limit)
-
-            
-
-            return res.status(200).json();
-        } catch (error) {
-            this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
-        }
-    }
 
     @UseGuards(AuthGuard)
     @Get("/feed")
@@ -133,7 +135,7 @@ export class EventController {
             });
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
@@ -154,7 +156,7 @@ export class EventController {
             return res.status(200).json(events);
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
@@ -173,7 +175,7 @@ export class EventController {
 
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
     
@@ -188,7 +190,7 @@ export class EventController {
 
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
@@ -207,7 +209,7 @@ export class EventController {
 
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
@@ -219,7 +221,7 @@ export class EventController {
             return res.status(200).json({message: 'Event deleted!'});
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 }
