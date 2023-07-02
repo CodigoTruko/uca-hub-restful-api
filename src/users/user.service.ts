@@ -64,9 +64,6 @@ export class UserService {
         userFound.tokens = userTokens
     }
 
-    //TODO Follow a User insert into Followers
-    // add into others followers and into the user's own follows
-
     //Works with params being the usernames of the people within the interaction
     async followUser(toFollow, follower){
 

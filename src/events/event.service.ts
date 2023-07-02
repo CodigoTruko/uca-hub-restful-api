@@ -34,6 +34,15 @@ export class EventService{
         return {count: userPostsToCount.postsCount, results: results.posts}
     }  
 
+    async getEventsFromUser(user, documentsToSkip=0, limitOfDocuments = 20){
+        const userPostsToCount = await this.userModel.findOne({ username: user})
+
+        const results = await this.userModel.findOne({ _id: user}, { posts: { $slice: [documentsToSkip, limitOfDocuments+documentsToSkip]}})
+            .sort({createdAt: -1})
+            .populate("posts", "title description author")
+        return {count: userPostsToCount.postsCount, results: results.posts}
+    } 
+
     async createCommunityEvent(event: CreateEventDto, name){
         
         const createdEvent = await new this.eventModel(event).save();
