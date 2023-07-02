@@ -38,13 +38,13 @@ export class UserController {
         }
     }
 
-    // @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard)
     @Get("/subscriptions")
     async getSubscriptions(@Req() req: Request, @Res() res: Response){
         try {
             const user =  await this.userService.getMyProfile(req.user["sub"])
 
-            return res.status(200).json({ followers: user.followers})
+            return res.status(200).json({ subcriptions: user.subscriptions})
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({error: "Internal server error!"})
@@ -104,23 +104,17 @@ export class UserController {
             return res.status(500).json({error: "Internal server error!"});
         }
     }
-
-    /* @Get('/all')
-    async findAllUsers(@Req() req: Request, @Res() res: Response){
-        try {
-            
-        } catch (error) {
-            this.logger.error(error);
-            return res.status(500).json({error: "Internal server error!"});
-        }
-    } */
     
     @UseGuards(AuthGuard)
     @Get('/bookmarks')
-    getUserBookmarks(@Req() req: Request, @Res() res: Response){
+    async getUserBookmarks(@Req() req: Request, @Res() res: Response){
         //TODO
         try {
             this.logger.verbose("Fetching Users Bookmarks!");
+            const user = await this.userService.getMyProfile(req.user["sub"]);
+
+            this.logger.verbose("Users Bookmarks Fetched!");
+            return res.status(200).json({ subscriptions: user.subscriptions})
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({error: "Internal server error!"});
@@ -146,10 +140,28 @@ export class UserController {
         }
     }
 
-    @Get(':id')
-    findUserByUsername(@Req() req: Request, @Res() res: Response, @Param("id") id: string){
+    @UseGuards(AuthGuard)
+    @Get("/:username")
+    async findUserByUsername(@Req() req: Request, @Res() res: Response, @Param("username") identifier: string){
         try {
-            
+            this.logger.verbose("Finding User...");
+            const userFound = await this.userService.findUserByUsername(identifier)
+
+            if(!userFound) return res.status(404).json({ error: "User not found!"})
+
+
+            const { name, carnet, username, email, follows, followers} = userFound
+
+            const userProfile = {
+                name: name,
+                carnet: carnet,
+                username: username,
+                email: email,
+                follows: follows,
+                followers: followers
+            }
+            this.logger.verbose("User Found!");
+            return res.status(200).json({user: userProfile })
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: "Internal server error!"});

@@ -65,7 +65,7 @@ export class EventController {
             
             await this.eventService.createProfileEvent(event, req.user["sub"]);
             this.logger.verbose("Profile Event Created!");
-            return res.status(200).json({ message: "Event Created!" })
+            return res.status(201).json({ message: "Event Created!" })
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
@@ -95,23 +95,19 @@ export class EventController {
             })
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+            return res.status(500).json({ message: "Oops! Something went wrong. Try again later :)" });
         }
     }
 
-    @Get("/v2")
-    async findEvents(@Req() req: Request, @Res() res: Response, @Query() { skip, limit }: PaginationParams){
+    async getEventsFromUser(@Req() req: Request, @Res() res: Response,  @Query() { skip, limit }: PaginationParams){
         try {
-            const events =  await this.eventService.findAllVisibleEvents(skip, limit)
-
             
-
-            return res.status(200).json();
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
+
 
     @UseGuards(AuthGuard)
     @Get("/feed")
