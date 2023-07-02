@@ -1,8 +1,10 @@
 import { Body, Controller, Delete, Get, Logger, Param, Post, Res } from "@nestjs/common";
 import { FacultyService } from "./faculty.service";
 import { CreateFacultyDto } from "./models/dtos/createFacultyDto";
+import { ApiTags } from "@nestjs/swagger";
 
-@Controller('faculty')
+@ApiTags("Faculty")
+@Controller("faculty")
 export class FacultyController{
     private readonly logger = new Logger(FacultyController.name);
     constructor(private facultyService: FacultyService){}

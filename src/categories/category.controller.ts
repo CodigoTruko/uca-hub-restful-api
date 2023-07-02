@@ -1,7 +1,9 @@
 import { Body, Controller, Get, Logger, Post, Res } from "@nestjs/common";
 import { CategoryService } from "./category.service";
 import { CreateCategoryDto } from "./models/dtos/createCategoryDto";
+import { ApiTags } from "@nestjs/swagger";
 
+@ApiTags("Categories")
 @Controller("categories")
 export class CategoryController {
     private readonly logger = new Logger(CategoryController.name);
