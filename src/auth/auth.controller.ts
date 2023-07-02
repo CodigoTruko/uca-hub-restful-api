@@ -6,7 +6,9 @@ import { LoginUserDto } from "../users/models/dtos/loginUserDto";
 import { UserService } from "../users/user.service";
 import * as bcrypt from "bcrypt";
 import { AuthGuard } from "@nestjs/passport";
+import { ApiTags } from "@nestjs/swagger";
 
+@ApiTags('Authorization')
 @Controller('auth')
 export class AuthController{
     private readonly logger = new Logger(AuthController.name);

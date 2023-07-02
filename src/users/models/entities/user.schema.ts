@@ -5,32 +5,39 @@ import { Event } from "../../../events/models/entities/event.schema";
 import * as bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
 import { Logger } from "@nestjs/common";
+import { ApiProperty } from "@nestjs/swagger";
 
 export type UserDocument = HydratedDocument<User>
 
 //https://github.com/MarioMartinez00072520/workalize-uca/blob/main/models/User.model.js
 //https://docs.nestjs.com/security/encryption-and-hashing
+
+
 @Schema({ 
     timestamps: true,
-/*     toJSON: {
-        virtuals: true,
-    }, */
  })
 export class User {
+    @ApiProperty()
     @Prop({required: true})
     name: String;
+    @ApiProperty()
     @Prop({required: true})
     carnet: String;
+    @ApiProperty()
     @Prop({required: true})
     username: String;
+    @ApiProperty()
     @Prop({required: true})
     email: String;
+    @ApiProperty()
     @Prop()
     password: String;
     @Prop()
     salt: String;
+    @ApiProperty()
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}]})
     follows: User[]
+    @ApiProperty()
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}]})
     followers: User[]
     @Prop()
@@ -72,40 +79,4 @@ UserSchema.virtual("compare")
         return await bcrypt.compare(password, this.password)
 });
 
-/* 
-UserSchema.methods.encryptPassword = async function(password){
-    const logger = new Logger(User.name)
-    if(!password) return "";
-    try {
-        logger.verbose(this.salt)
-        logger.verbose(password)
-        const hashedPassword = await bcrypt.hash(password, this.salt)
-        return hashedPassword;
-    } catch (error) {
-        logger.debug({error})
-        return "";
-    }
-}
-
-UserSchema.methods.makeSalt =  async function(){
-    return await bcrypt.genSalt()
-}
-
-UserSchema.methods.comparePassword = async function(password){
-    const logger = new Logger(User.name)
-    logger.debug(password)
-    logger.debug(this.hashedPassword)
-    const isMatch = await bcrypt.compare(password, this.password)
-    return isMatch;
-}
-
-UserSchema.virtual("hashedPassword")
-    .set(async function (this: UserDocument, password: string = randomBytes(10).toString()){
-        const logger = new Logger(User.name)
-        if(!password) return;
-        this.salt = await this.makeSalt();
-        logger.debug(this.salt)
-        logger.debug(this.password)   
-});
- */
 export { UserSchema };

@@ -83,8 +83,6 @@ export class UserService {
 
             return { deleteFollow, deleteFollower};
         }
-
-        return "last return"
     }
 
     async followCommunity(user, community){
@@ -104,8 +102,6 @@ export class UserService {
 
             return { deleteCommunity, deleteUser};
         }
-
-        return "last return"
     }
 
     async getMyProfile(id){
@@ -113,9 +109,47 @@ export class UserService {
             .populate("followers", "name carnet username")
             .populate("follows", "name carnet username")
             .populate("subscriptions", "name")
+            .populate("posts", "title description")
             .exec();
 
         return myUser
+    }
+
+    async searchUsers(keyword: string, documentsToSkip=0, limitOfDocuments=20){
+        const usersCount= await this.userModel.find({ $or: [
+            { name: { $regex: keyword, $options: 'i'}},
+            { carnet: { $regex: keyword, $options: 'i'}},
+            { username: { $regex: keyword, $options: 'i'}},
+            ]
+        }).count()
+
+        const usersResults = await this.userModel.find({ $or: [
+                { name: { $regex: keyword, $options: 'i'}},
+                { carnet: { $regex: keyword, $options: 'i'}},
+                { username: { $regex: keyword, $options: 'i'}},
+                ]
+            }, 
+            {
+                password: 0,
+                salt: 0,
+                posts: 0,
+                subscriptions: 0,
+                followers: 0,
+                follows: 0,
+                createdAt: 0,
+                updatedAt: 0,
+                tokens: 0,
+                bookmarks: 0,
+                email: 0,
+                __v: 0,
+            })
+            .skip(documentsToSkip)
+            .limit(limitOfDocuments)
+            .sort({ username: 1, name: 1, carnet: 1})
+            .exec()
+        
+        return { count: usersCount, results: usersResults}
+
     }
     //TODO implement get user bookmarks, and communities
     // also get normal users

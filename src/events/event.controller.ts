@@ -103,24 +103,11 @@ export class EventController {
     }
 
     @UseGuards(AuthGuard)
-    @Get("/:username")
-    async getEventsFromUser(@Req() req: Request, @Res() res: Response, @Param("identifier") username: string,  @Query() { skip, limit }: PaginationParams){
-        try {
-            this.logger.verbose("Fetching User's Events")
-            const userFound = await this.userService
-        } catch (error) {
-            this.logger.error(error);
-            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
-        }
-    }
-
-
-    @UseGuards(AuthGuard)
     @Get("/feed")
     async getFeed(@Req() req: Request, @Res() res: Response, @Query() {skip, limit}: PaginationParams){
         try {
-            this.logger.verbose("Fetching User's Feed...")
-            const user = req.user
+            this.logger.verbose("Fetching User's Feed...");
+            const user = req.user;
             const countAndFeed = await this.eventService.getFeed(user["sub"], skip, limit);
             
             const fullUrl = req.protocol + '://' + req.get('host') + req.path;
@@ -135,11 +122,37 @@ export class EventController {
             });
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)",
+            });
         }
     }
 
+    /* @UseGuards(AuthGuard)
+    @Get(":username")
+    async getEventsFromUser(@Req() req: Request, @Res() res: Response, @Param("username") username: string,  @Query() { skip, limit }: PaginationParams){
+        try {
+            this.logger.verbose("Fetching User's Events")
+            const userFound = await this.userService.findUserByUsername(username);
+            if(!userFound) return res.status(404).json({ message: "The user was not found"})
 
+            const countAndResults = await this.eventService.getEventsFromUser(username, skip, limit);
+
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, countAndResults.count);
+            const previous = getPrevious(fullUrl, skip, limit, countAndResults.count);
+
+            return res.status(200).json({
+                count: countAndResults.count,
+                next: next,
+                previous: previous,
+                results: countAndResults.results,
+            })
+
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    } */
 
     @Get()
     @ApiOkResponse({ description: 'Events found!' })
@@ -154,6 +167,22 @@ export class EventController {
             
             this.logger.verbose('Events found!')
             return res.status(200).json(events);
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Post()
+    async createEvent(@Req() req: Request, @Res() res: Response, @Body() event: CreateEventDto){
+        try {
+            this.logger.verbose("Creating Profile Event...")
+            event.author = req.user["sub"]
+            
+            await this.eventService.createEvent(event);
+            this.logger.verbose("Profile Event Created!");
+            return res.status(201).json({ message: "Event Created!" })
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});

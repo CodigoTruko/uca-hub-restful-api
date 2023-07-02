@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Param, Patch, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Logger, Param, Patch, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
 import { Request, Response } from "express";
 import { RegisterUserDto } from "./models/dtos/registerUserDto";
 import { LoginUserDto } from "./models/dtos/loginUserDto";
@@ -6,7 +6,12 @@ import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { CommunityService } from "src/communities/community.service";
 import * as bcrypt from "bcrypt";
+import { PaginationParams } from "src/pagination/paginationParamsDto";
+import { ApiTags } from "@nestjs/swagger";
+import { count } from "console";
+import { getNext, getPrevious } from "src/utils/queryUrl.calculator";
 
+@ApiTags('User')
 @Controller('user')
 export class UserController {
 
@@ -59,7 +64,7 @@ export class UserController {
         try {
             const user =  await this.userService.getMyProfile(req.user["sub"])
 
-            return res.status(200).json({ followers: user.follows})
+            return res.status(200).json({ follows: user.follows})
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({error: "Internal server error!"})
@@ -88,7 +93,7 @@ export class UserController {
             const user =  req.user
             const myUser = await this.userService.getMyProfile(user["sub"]);
 
-            const { name, carnet, username, email, followers, follows } = myUser;
+            const { name, carnet, username, email, followers, follows, posts } = myUser;
 
             const profile = {
                 name: name,
@@ -96,7 +101,8 @@ export class UserController {
                 username: username,
                 email: email,
                 followers: followers,
-                follows: follows
+                follows: follows,
+                posts: posts
             }
             return res.status(200).json({ profile: profile})
         } catch (error) {
@@ -104,6 +110,7 @@ export class UserController {
             return res.status(500).json({error: "Internal server error!"});
         }
     }
+    
     
     @UseGuards(AuthGuard)
     @Get('/bookmarks')
@@ -138,9 +145,9 @@ export class UserController {
             return res.status(500).json({error: "Internal server error!"});
         }
     }
-
+    
     @UseGuards(AuthGuard)
-    @Get("/:username")
+    @Get("identifier/:username")
     async findUserByUsername(@Req() req: Request, @Res() res: Response, @Param("username") identifier: string){
         try {
             this.logger.verbose("Finding User...");
@@ -165,5 +172,32 @@ export class UserController {
             this.logger.error(error);
             return res.status(500).json({message: "Internal server error!"});
         }
+    }
+
+    @UseGuards(AuthGuard)
+    @Get("/search")
+    async search(@Req() req: Request, @Res() res: Response, @Query() {skip, limit}: PaginationParams, @Query() {keyword}){
+        try {
+            
+            this.logger.verbose("Searching Users...");
+            console.log(keyword)
+            const countAndResults = await this.userService.searchUsers(keyword, skip, limit);
+            
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, countAndResults.count);
+            const previous = getPrevious(fullUrl, skip, limit, countAndResults.count);
+
+            return res.status(200).json({
+                count: countAndResults.count,
+                next: next,
+                previous: previous,
+                results: countAndResults.results
+            })
+        
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Internal server error!"});
+        }
+
     }
 }

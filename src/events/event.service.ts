@@ -28,10 +28,16 @@ export class EventService{
     async getEventsFromProfile(user, documentsToSkip=0, limitOfDocuments = 20){
         const userPostsToCount = await this.userModel.findOne({ _id: user})
 
-        const results = await this.userModel.findOne({ _id: user}, { posts: { $slice: [documentsToSkip, limitOfDocuments+documentsToSkip]}})
+        const results = await this.userModel.findOne({ _id: user})
             .sort({createdAt: -1})
             .populate("posts", "title description author")
-        return {count: userPostsToCount.postsCount, results: results.posts}
+            .exec()
+        
+        if(documentsToSkip){
+            return { count: userPostsToCount.postsCount, results: results.posts.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
+        }
+        return { count: userPostsToCount.postsCount, results: results.posts.slice(0, limitOfDocuments) }
+        
     }  
 
     async getEventsFromUser(user, documentsToSkip=0, limitOfDocuments = 20){
@@ -63,21 +69,40 @@ export class EventService{
     }
 
     async getFeed(id, documentsToSkip = 0, limitOfDocuments?: number){
-        const user = await this.userModel.find({ _id: id }).exec();
-        const follows = user.map( user => user.follows);
-
-        const feedCount = this.eventModel.find({ author: [follows]})
+        const user = await this.userModel.findOne({ _id: id }).exec();
+        console.log(user)
+        console.log(user.follows)
+        const feedCount = this.eventModel.find({ author: { $in: user.follows}})
             .sort({ createdAt: -1})
             .populate("author", "name username");
 
-        const feedResults = this.eventModel.find({ author: [follows]})
+        const feedResults = this.eventModel.find(
+            { author: { $in: user.follows} },
+            {
+                visibility: 0,
+                createdAt: 0,
+                updatedAt: 0,
+                __v: 0
+            }
+            )
             .sort({ createdAt: -1})
             .skip(documentsToSkip)
             .populate("author", "name username");
 
-        if(limitOfDocuments) { feedResults.limit(limitOfDocuments)}
         
-        return { count: await feedCount.count(), results: await feedResults.exec(), };
+        
+        if(limitOfDocuments) { feedResults.limit(limitOfDocuments)}
+
+        const count = await feedCount.count()
+        console.log(count)
+        const results = await feedResults.exec()
+        console.log(results)
+
+        return { count: count, results: results, };
+    }
+
+    async createEvent(event){
+        await new this.eventModel(event).save()
     }
 
     async findAllEvents(documentsToSkip = 0, limitOfDocuments?: number){
