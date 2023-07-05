@@ -18,9 +18,8 @@ export class UserController {
     private readonly logger = new Logger(UserController.name);
     constructor(
         private userService: UserService,
-        private communityService: CommunityService) {}
-    
-
+        private communityService: CommunityService
+    ) {}
     
 
     //Follow
