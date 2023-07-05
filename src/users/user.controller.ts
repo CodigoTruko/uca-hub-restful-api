@@ -63,6 +63,7 @@ export class UserController {
         try {
             const user =  await this.userService.getMyProfile(req.user["sub"])
 
+
             return res.status(200).json({ follows: user.follows})
         } catch (error) {
             this.logger.error(error);
