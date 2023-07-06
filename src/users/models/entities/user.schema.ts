@@ -28,7 +28,7 @@ export class User {
     @Prop({required: true})
     email: String;
     @ApiProperty()
-    @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "Program"}]})
+    @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Program" }]})
     program: Program;
     @ApiProperty()
     @Prop()

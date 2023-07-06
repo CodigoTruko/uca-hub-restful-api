@@ -16,7 +16,8 @@ export class EventController {
     private readonly logger = new Logger(EventController.name);
     constructor(
         private eventService: EventService,
-        private userService: UserService){}
+        private userService: UserService
+    ){}
     
 
     

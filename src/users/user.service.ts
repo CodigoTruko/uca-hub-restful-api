@@ -39,7 +39,11 @@ export class UserService {
         this.logger.debug(`User created with id: ${createdUser._id}`);
     }
     async findAllUsers(){
-        return await this.userModel.find().exec();
+
+        const queryCount = await this.userModel.find().count();
+        const queryResults = await this.userModel.find().exec();
+        return { count: queryCount, results: queryResults }
+        // return await this.userModel.find().exec();
     }
     async findUserByIdentifier(identifier: string){
         const userFound = await this.userModel.findOne({ $or: [{username: identifier}, { email: identifier}] } ).exec();
@@ -66,20 +70,25 @@ export class UserService {
 
     //Works with params being the usernames of the people within the interaction
     async followUser(toFollow, follower){
+        this.logger.log(toFollow)
+        this.logger.log(follower)
 
-        const userToFollow = await this.userModel.findOne({ _id: toFollow, followers: { _id: follower } }).exec();
-        const userFollowing = await this.userModel.findOne({ _id: follower, follows: { _id: toFollow}}).exec();
+        const userToFollow = await this.userModel.findOne({ _id: toFollow}).exec();
+        const userFollowing = await this.userModel.findOne({ _id: follower}).exec();
 
-        if(!userToFollow || !userFollowing){
+        this.logger.debug(userToFollow.username)
+        this.logger.debug(userFollowing.username)
 
+        if(userToFollow.followers.findIndex( user => user == follower) <=0 || userFollowing.follows.findIndex(user => user == toFollow)){
+            
             const saveFollow = await this.userModel.updateOne({ _id: toFollow }, { $push: { followers: { _id: follower }}});
             const saveFollower = await this.userModel.updateOne({ _id: follower }, { $push: { follows: { _id: toFollow }}});
 
             return { saveFollow, saveFollower};
 
         } else {
-            const deleteFollow = await this.userModel.updateOne({ _id: toFollow }, { $pull: { followers: follower }});
-            const deleteFollower = await this.userModel.updateOne({ _id: follower }, { $pull: { follows: toFollow}});
+            const deleteFollow = await this.userModel.updateOne({ _id: toFollow }, { $pull: { followers: follower }}).exec();
+            const deleteFollower = await this.userModel.updateOne({ _id: follower }, { $pull: { follows: toFollow}}).exec();
 
             return { deleteFollow, deleteFollower};
         }
@@ -106,17 +115,47 @@ export class UserService {
 
     async getMyProfile(id){
         const myUser = await this.userModel.findOne({_id: id})
-            .populate("followers", "name carnet username")
-            .populate("follows", "name carnet username")
-            .populate("subscriptions", "name")
-            .populate("posts", "title description")
+            .populate({
+                path: "program",
+                populate: {
+                    path: "faculty",
+                    select: "name",
+                    model: "Faculty"
+                },
+                select: "name"
+            })
             .exec();
-
+        this.logger.debug(myUser)
         return myUser
     }
 
+    async updateMyProfile(user){
+        /* const userUpdated = await this.userModel.updateOne({ _id:  user.id}, {
+            name: user.name,
+            carnet: user.carnet,
+            username: user.username,
+            email: user.email,
+            program: user.program,
+            description: user.description,
+            image: user.image,
+        }).exec() */
+        console.log(user)
+        const userToUpdate = await this.userModel.findById(user.id).exec()
+        console.log(userToUpdate)
+        userToUpdate.name = user.name
+        userToUpdate.carnet = user.carnet,
+        userToUpdate.username = user.username
+        userToUpdate.email = user.email
+        userToUpdate.program = user.program
+        userToUpdate.description = user.description
+        userToUpdate.image = user.image
+
+        return await userToUpdate.save()
+    }
+
     async searchUsers(keyword: string, documentsToSkip=0, limitOfDocuments=20){
-        const usersCount= await this.userModel.find({ $or: [
+
+        const usersCount = await this.userModel.find({ $or: [
             { name: { $regex: keyword, $options: 'i'}},
             { carnet: { $regex: keyword, $options: 'i'}},
             { username: { $regex: keyword, $options: 'i'}},
