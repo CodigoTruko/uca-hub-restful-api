@@ -18,7 +18,7 @@ export class UserController {
     private readonly logger = new Logger(UserController.name);
     constructor(
         private userService: UserService,
-        private communityService: CommunityService
+        private communityService: CommunityService,
     ) {}
     
 
@@ -59,11 +59,23 @@ export class UserController {
 
     @UseGuards(AuthGuard)
     @Get("/follows")
-    async getFollows(@Req() req: Request, @Res() res: Response){
+    async getFollows(@Req() req: Request, @Res() res: Response, @Query() {skip = 0, limit=20}: PaginationParams){
         try {
             const user =  await this.userService.getMyProfile(req.user["sub"])
 
-            return res.status(200).json({ follows: user.follows})
+            const count = user.followers.length
+            console.log(count)
+            /* const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, count);
+            const previous = getPrevious(fullUrl, skip, limit, count); */
+
+            return res.status(200).json({
+                count: "count",
+                next: "thing",
+                previous: "thing2",
+                results: user.follows,
+
+            })
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({error: "Internal server error!"})
@@ -92,17 +104,20 @@ export class UserController {
             const user =  req.user
             const myUser = await this.userService.getMyProfile(user["sub"]);
 
-            const { name, carnet, username, email, followers, follows, posts } = myUser;
+            //const { name, carnet, username, email, followers, follows, posts } = myUser;
 
             const profile = {
-                name: name,
-                carnet: carnet,
-                username: username,
-                email: email,
-                followers: followers,
-                follows: follows,
-                posts: posts
+                name: myUser.name,
+                carnet: myUser.carnet,
+                username: myUser.username,
+                email: myUser.email,
+                program: myUser.program,
+                description: myUser.description,
+                image: myUser.image,
+                followers: myUser.followers,
+                follows: myUser.follows
             }
+
             return res.status(200).json({ profile: profile})
         } catch (error) {
             this.logger.error(error);
@@ -126,27 +141,10 @@ export class UserController {
         }
     }
 
-    @UseGuards(AuthGuard)
-    @Patch("/subscribe/:identifier")
-    async subscribeToCommunity(@Req() req: Request, @Res() res: Response, @Param("identifier") identifier: string){
-        try {
-            console.log(req.originalUrl)
-            const toFollow = await this.communityService.findCommunityByIdentifier(identifier);
-            console.log(toFollow)
-            if(!toFollow) return res.status(404).json({ message: "The COMMUNITY you are trying to follow does not exist!"})
-
-            const user = req.user
-            const followStatus = await this.userService.followCommunity( user["sub"], toFollow._id);
-            this.logger.debug(followStatus)
-            return res.status(200).json({ message: "Follow has been toggled"})
-        } catch (error) {
-            this.logger.error(error);
-            return res.status(500).json({error: "Internal server error!"});
-        }
-    }
+    
     
     @UseGuards(AuthGuard)
-    @Get("identifier/:username")
+    @Get(":username")
     async findUserByUsername(@Req() req: Request, @Res() res: Response, @Param("username") identifier: string){
         try {
             this.logger.verbose("Finding User...");
@@ -175,7 +173,7 @@ export class UserController {
 
     @UseGuards(AuthGuard)
     @Get("/search")
-    async search(@Req() req: Request, @Res() res: Response, @Query() {skip, limit}: PaginationParams, @Query() {keyword}){
+    async search(@Req() req: Request, @Res() res: Response,  @Query() { keyword }, @Query() {skip, limit}: PaginationParams){
         try {
             
             this.logger.verbose("Searching Users...");
