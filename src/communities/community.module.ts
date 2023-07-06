@@ -6,6 +6,7 @@ import { Community, CommunitySchema } from "./models/entities/community.schema";
 import { EventService } from "src/events/event.service";
 import { EventSchema } from "src/events/models/entities/event.schema";
 import { User, UserSchema } from "src/users/models/entities/user.schema";
+import { UserService } from "src/users/user.service";
 
 @Module(
     {
@@ -15,7 +16,7 @@ import { User, UserSchema } from "src/users/models/entities/user.schema";
             MongooseModule.forFeature([{name: User.name, schema: UserSchema}])
         ],
         controllers: [CommunityController],
-        providers: [CommunityService, EventService],
+        providers: [CommunityService, EventService, UserService],
         exports: [CommunityService]
     }
 )

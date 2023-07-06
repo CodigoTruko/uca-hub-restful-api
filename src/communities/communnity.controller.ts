@@ -9,6 +9,7 @@ import { CreateEventDto } from "src/events/models/dto/createEventDto";
 import { getNext, getPrevious } from "src/utils/queryUrl.calculator";
 import { EventService } from "src/events/event.service";
 import { PaginationParams } from "src/pagination/paginationParamsDto";
+import { UserService } from "src/users/user.service";
 
 @ApiTags('Community')
 @Controller('community')
@@ -17,6 +18,7 @@ export class CommunityController{
     constructor(
         private readonly communityService: CommunityService,
         private readonly eventService: EventService,
+        private readonly userService: UserService,
     ){}
 
     @Post()
@@ -73,6 +75,25 @@ export class CommunityController{
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Patch("/subscribe/:identifier")
+    async subscribeToCommunity(@Req() req: Request, @Res() res: Response, @Param("identifier") identifier: string){
+        try {
+            console.log(req.originalUrl)
+            const toFollow = await this.communityService.findCommunityByIdentifier(identifier);
+            console.log(toFollow)
+            if(!toFollow) return res.status(404).json({ message: "The COMMUNITY you are trying to follow does not exist!"})
+
+            const user = req.user
+            const followStatus = await this.userService.followCommunity( user["sub"], toFollow._id);
+            this.logger.debug(followStatus)
+            return res.status(200).json({ message: "Follow has been toggled"})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({error: "Internal server error!"});
         }
     }
 
