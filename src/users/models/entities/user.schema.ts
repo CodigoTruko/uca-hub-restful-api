@@ -6,11 +6,9 @@ import * as bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
 import { Logger } from "@nestjs/common";
 import { ApiProperty } from "@nestjs/swagger";
+import { Program } from "src/programs/models/entities/program.schema";
 
 export type UserDocument = HydratedDocument<User>
-
-//https://github.com/MarioMartinez00072520/workalize-uca/blob/main/models/User.model.js
-//https://docs.nestjs.com/security/encryption-and-hashing
 
 
 @Schema({ 
@@ -30,24 +28,33 @@ export class User {
     @Prop({required: true})
     email: String;
     @ApiProperty()
+    @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Program" }]})
+    program: Program;
+    @ApiProperty()
     @Prop()
-    password: String;
-    @Prop()
-    salt: String;
+    description: String;
+    @ApiProperty()
+    image: String;
     @ApiProperty()
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}]})
-    follows: User[]
+    follows: User[];
     @ApiProperty()
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}]})
-    followers: User[]
-    @Prop()
-    tokens: String[];
+    followers: User[];
     @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event"}]})
     bookmarks: Event[];
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "Community"}]})
     subscriptions: Community[];
     @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event"}]})
     posts: Event[]
+    @ApiProperty()
+    @Prop()
+    password: String;
+    @Prop()
+    salt: String;
+    @Prop()
+    tokens: String[];
+    //methods or virtuals
     postsCount;
     genSalt;
     hash;

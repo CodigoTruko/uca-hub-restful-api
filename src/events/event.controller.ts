@@ -16,48 +16,12 @@ export class EventController {
     private readonly logger = new Logger(EventController.name);
     constructor(
         private eventService: EventService,
-        private userService: UserService){}
+        private userService: UserService
+    ){}
     
-    @UseGuards(AuthGuard)
-    @Post("/community/:name")
-    @ApiCreatedResponse({ description: 'Event created!' })
-    @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    async createCommunityEvent(@Req() req: Request, @Res() res: Response, @Param("name") name: string, @Body() createEventDto: CreateEventDto){
-        try {
-            this.logger.verbose('Creating Community Event...');
-            createEventDto.author = req.user["sub"];
-            await this.eventService.createCommunityEvent(createEventDto, name);
-            this.logger.verbose('Community Event Created!');
-            
-            return res.status(201).json({message: 'Event created!'});
-        } catch (error) {
-            this.logger.error(error);
-            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
-        }
-    }
-    //TODO Migrate this endpoint to community controller
-    @Get("/community/:name")
-    async findEventsFromCommunity(@Req() req: Request, @Res() res: Response, @Param("name") name: string, @Query() { skip, limit }: PaginationParams){
-        try {
-            this.logger.verbose("Fetching Community's Events...");
-            const countAndResults = await this.eventService.getEventsFromCommunity(name, skip, limit);
 
-            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
-            const next = getNext(fullUrl, skip, limit, countAndResults.count);
-            const previous = getPrevious(fullUrl, skip, limit, countAndResults.count);
-
-            this.logger.verbose("Community's Events fetched!");
-            return res.status(200).json({
-                count: countAndResults.count,
-                next: next,
-                previous: previous,
-                results: countAndResults.results
-            });
-        } catch (error) {
-            this.logger.error(error);
-            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
-        }
-    }
+    
+    
 
     @UseGuards(AuthGuard)
     @Post("/profile")
@@ -127,33 +91,6 @@ export class EventController {
         }
     }
 
-    /* @UseGuards(AuthGuard)
-    @Get(":username")
-    async getEventsFromUser(@Req() req: Request, @Res() res: Response, @Param("username") username: string,  @Query() { skip, limit }: PaginationParams){
-        try {
-            this.logger.verbose("Fetching User's Events")
-            const userFound = await this.userService.findUserByUsername(username);
-            if(!userFound) return res.status(404).json({ message: "The user was not found"})
-
-            const countAndResults = await this.eventService.getEventsFromUser(username, skip, limit);
-
-            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
-            const next = getNext(fullUrl, skip, limit, countAndResults.count);
-            const previous = getPrevious(fullUrl, skip, limit, countAndResults.count);
-
-            return res.status(200).json({
-                count: countAndResults.count,
-                next: next,
-                previous: previous,
-                results: countAndResults.results,
-            })
-
-        } catch (error) {
-            this.logger.error(error);
-            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
-        }
-    } */
-
     @Get()
     @ApiOkResponse({ description: 'Events found!' })
     @ApiNotFoundResponse({ description: 'Events not found' })
@@ -194,7 +131,6 @@ export class EventController {
     @ApiNotFoundResponse({ description: 'Event not found' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
     findEventById(@Param('id') id: string, @Req() req: Request, @Res() res: Response){
-
         try {
             const eventToAdd = this.eventService.findEventById(id);
 
