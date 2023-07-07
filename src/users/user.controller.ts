@@ -109,6 +109,7 @@ export class UserController {
             //const { name, carnet, username, email, followers, follows, posts } = myUser;
 
             const profile = {
+                id: myUser._id,
                 name: myUser.name,
                 carnet: myUser.carnet,
                 username: myUser.username,
