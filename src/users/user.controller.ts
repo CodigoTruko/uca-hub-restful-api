@@ -44,6 +44,17 @@ export class UserController {
     }
 
     @UseGuards(AuthGuard)
+    @Patch("/bookmark/:identifier")
+    async bookmarkEvent(@Req() req: Request, @Res() res: Response, @Param("identifier") identifier: string){
+        try {
+            
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({error: "Internal server error!"});
+        }
+    }
+
+    @UseGuards(AuthGuard)
     @Get("/subscriptions")
     async getSubscriptions(@Req() req: Request, @Res() res: Response){
         try {

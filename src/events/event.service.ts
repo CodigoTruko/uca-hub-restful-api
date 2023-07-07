@@ -8,6 +8,7 @@ import { REQUEST } from '@nestjs/core';
 import {Request} from 'express'
 import { User } from 'src/users/models/entities/user.schema';
 import { Community } from 'src/communities/models/entities/community.schema';
+import { Comment } from './models/entities/comment.schema';
 
 @Injectable()
 export class EventService{
@@ -16,6 +17,7 @@ export class EventService{
         @InjectModel(Event.name) private eventModel: Model<Event>,
         @InjectModel(User.name) private userModel: Model<User>,
         @InjectModel(Community.name) private communityModel: Model<Community>,
+        @InjectModel(Comment.name) private commentModel: Model<Comment>,
         ){}
     
     async createProfileEvent(event: CreateEventDto, user){
@@ -26,31 +28,74 @@ export class EventService{
     }
     
     async getEventsFromProfile(user, documentsToSkip=0, limitOfDocuments = 20){
-        const userPostsToCount = await this.userModel.findOne({ _id: user})
 
         const results = await this.userModel.findOne({ _id: user})
             .sort({createdAt: -1})
-            .populate("posts", "title description")
+            .populate({
+                path: "posts",
+                select: "title description",
+                populate: {
+                    path: "author",
+                    model: "User",
+                    select: "_id name username carnet"
+                }
+            })
             .exec()
         
         if(documentsToSkip){
-            return { count: userPostsToCount.postsCount, results: results.posts.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
+            return { count: results.posts.length, results: results.posts.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
         }
-        return { count: userPostsToCount.postsCount, results: results.posts.slice(0, limitOfDocuments) }
+        return { count: results.posts.length, results: results.posts.slice(0, limitOfDocuments) }
         
     }  
 
     async getEventsFromUser(user, documentsToSkip=0, limitOfDocuments = 20){
-        const userPostsToCount = await this.userModel.findOne({ username: user})
 
         const results = await this.userModel.findOne({ _id: user}, { posts: { $slice: [documentsToSkip, limitOfDocuments+documentsToSkip]}})
             .sort({createdAt: -1})
-            .populate("posts", "title description author")
-        return {count: userPostsToCount.postsCount, results: results.posts}
+            .populate({
+                path: "posts",
+                select: "title description",
+                populate: {
+                    path: "author",
+                    model: "User",
+                    select: "_id name username carnet"
+                }
+            })
+            .exec()
+        return {count: results.posts.length, results: results.posts}
     } 
 
+    async getCommentsFromEvent(id){
+        const event = await this.eventModel.findOne({ _id: id})
+            .populate({
+                path: "comments",
+                select: "message",
+                populate: {
+                    path: "author",
+                    model: "User",
+                    select: "_id name username carnet"
+                }
+            })
+            .exec()
+
+        return { count: event.comments.length, results: event.comments}
+    }
+
+    async createComment(id, comment){
+        const createdComment = await new this.commentModel(comment).save();
+
+        const event = await this.eventModel.updateOne({_id: id}, {$push: { comments: { _id: createdComment.id}}})
+        return { createdComment, event}
+    }
+
+    async deleteComment(event, comment){
+
+        const query = await this.eventModel.updateOne({_id: event}, {$pull: { comments: comment}})
+        return { query }
+    }
+
     async createCommunityEvent(event: CreateEventDto, name){
-        
         const createdEvent = await new this.eventModel(event).save();
         this.logger.log(createdEvent);
         const communityUpdated =  await this.communityModel.updateOne({name: name}, { $push: { posts: { _id: createdEvent._id }}})
