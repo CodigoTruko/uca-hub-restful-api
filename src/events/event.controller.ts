@@ -8,6 +8,7 @@ import { PaginationParams } from 'src/pagination/paginationParamsDto';
 import { AuthGuard } from "../auth/auth.guard";
 import { getNext, getPrevious } from 'src/utils/queryUrl.calculator';
 import { UserService } from 'src/users/user.service';
+import { CreateCommentDto } from './models/dto/createCommentDto';
 
 
 @ApiTags('Event')
@@ -35,7 +36,7 @@ export class EventController {
             return res.status(201).json({ message: "Event Created!" })
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+            return res.status(500).json({ message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
@@ -86,11 +87,65 @@ export class EventController {
             });
         } catch (error) {
             this.logger.error(error);
-            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)",
-            });
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
         }
     }
 
+    @UseGuards(AuthGuard)
+    @Post("/comment/:id")
+    async createComment(@Req() req: Request, @Res() res: Response, @Param("id") event, @Body() comment: CreateCommentDto){
+        try {
+            this.logger.verbose("Creating Comment at Event...")
+            comment.author = req.user["sub"]
+            const result = await this.eventService.createComment(event, comment)
+            return res.status(201).json({ message: "Your comment has been posted!"})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Get("/comment/:id")
+    async getCommentsFromEvent(@Req() req: Request, @Res() res: Response, @Param("id") event, @Query() {skip = 0, limit = 20}: PaginationParams){
+        try {
+
+            const results  = await this.eventService.getCommentsFromEvent(event)
+            
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, results.count);
+            const previous = getPrevious(fullUrl, skip, limit, results.count);
+
+            return res.status(200).json({
+                count: results.count,
+                next: next,
+                previous: previous,
+                results: results.results,
+            })
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
+    //ID Param of the 
+    @UseGuards(AuthGuard)
+    @Delete("/comment")
+    async deleteCommentsFromEvent(@Req() req: Request, @Res() res: Response, @Query() {event, comment}){
+        try {
+            
+            if( !event || !comment) return res.status(400).json({ message: "Your request requires a valid input for both event and comment"})
+            //not found cases
+            const query = await this.eventService.deleteComment(event, comment)
+
+            return res.status(200).json({message: "Your comment has been deleted!"})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+    
+    
     @Get()
     @ApiOkResponse({ description: 'Events found!' })
     @ApiNotFoundResponse({ description: 'Events not found' })
