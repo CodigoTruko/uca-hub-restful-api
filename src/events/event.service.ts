@@ -30,7 +30,7 @@ export class EventService{
 
         const results = await this.userModel.findOne({ _id: user})
             .sort({createdAt: -1})
-            .populate("posts", "title description author")
+            .populate("posts", "title description")
             .exec()
         
         if(documentsToSkip){
@@ -87,7 +87,7 @@ export class EventService{
             )
             .sort({ createdAt: -1})
             .skip(documentsToSkip)
-            .populate("author", "name username");
+            .populate("author", "name username carnet");
 
         
         

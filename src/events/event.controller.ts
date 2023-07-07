@@ -16,7 +16,8 @@ export class EventController {
     private readonly logger = new Logger(EventController.name);
     constructor(
         private eventService: EventService,
-        private userService: UserService){}
+        private userService: UserService
+    ){}
     
 
     
@@ -41,7 +42,7 @@ export class EventController {
     //TODO Migrate endpoint to User Controller
     @UseGuards(AuthGuard)
     @Get("/profile")
-    async getEventsFromProfile(@Req() req: Request, @Res() res: Response,  @Query() { skip, limit }: PaginationParams){
+    async getEventsFromProfile(@Req() req: Request, @Res() res: Response,  @Query() { skip = 0, limit = 10 }: PaginationParams){
         try {
             this.logger.verbose("Fetching User's Profile Events...")
 
@@ -67,7 +68,7 @@ export class EventController {
 
     @UseGuards(AuthGuard)
     @Get("/feed")
-    async getFeed(@Req() req: Request, @Res() res: Response, @Query() {skip, limit}: PaginationParams){
+    async getFeed(@Req() req: Request, @Res() res: Response, @Query() {skip = 0, limit = 20}: PaginationParams){
         try {
             this.logger.verbose("Fetching User's Feed...");
             const user = req.user;
@@ -94,7 +95,7 @@ export class EventController {
     @ApiOkResponse({ description: 'Events found!' })
     @ApiNotFoundResponse({ description: 'Events not found' })
     @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
-    async findAllEvents(@Req() req: Request, @Res() res: Response, @Query() { skip, limit}: PaginationParams){
+    async findAllEvents(@Req() req: Request, @Res() res: Response, @Query() { skip = 0, limit = 20}: PaginationParams){
         try {
             this.logger.verbose('Finding all events...');
             const events = await this.eventService.findAllEvents()
