@@ -41,8 +41,10 @@ export class UserService {
     async findAllUsers(){
 
         const queryCount = await this.userModel.find().count();
-        const queryResults = await this.userModel.find().exec();
-        return { count: queryCount, results: queryResults }
+        const queryResults = await this.userModel.find()
+            .select("-password -salt -posts -subscriptions -follows -followers -createdAt -updatedAt -tokens -bookmarks -email -__v")
+            .exec();
+        return { count: queryResults.length, results: queryResults }
         // return await this.userModel.find().exec();
     }
     async findUserByIdentifier(identifier: string){
@@ -70,15 +72,10 @@ export class UserService {
 
     //Works with params being the usernames of the people within the interaction
     async followUser(toFollow, follower){
-        this.logger.log(toFollow)
-        this.logger.log(follower)
 
         const userToFollow = await this.userModel.findOne({ _id: toFollow}).exec();
         const userFollowing = await this.userModel.findOne({ _id: follower}).exec();
-
-        this.logger.debug(userToFollow.username)
-        this.logger.debug(userFollowing.username)
-
+        
         if(userToFollow.followers.findIndex( user => user == follower) <=0 || userFollowing.follows.findIndex(user => user == toFollow)){
             
             const saveFollow = await this.userModel.updateOne({ _id: toFollow }, { $push: { followers: { _id: follower }}});
@@ -168,7 +165,7 @@ export class UserService {
                 { username: { $regex: keyword, $options: 'i'}},
                 ]
             }, 
-            {
+            /* {
                 password: 0,
                 salt: 0,
                 posts: 0,
@@ -181,7 +178,8 @@ export class UserService {
                 bookmarks: 0,
                 email: 0,
                 __v: 0,
-            })
+            } */)
+            .select("-password -salt -posts -subscriptions -follows -followers -createdAt -updatedAt -tokens -bookmarks -email -__v")
             .skip(documentsToSkip)
             .limit(limitOfDocuments)
             .sort({ username: 1, name: 1, carnet: 1})

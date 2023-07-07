@@ -146,7 +146,7 @@ export class UserController {
 
     @UseGuards(AuthGuard)
     @Get("/search")
-    async search(@Req() req: Request, @Res() res: Response, @Query() {skip, limit}: PaginationParams, @Query() {keyword}){
+    async search(@Req() req: Request, @Res() res: Response, @Query() {skip = 0, limit = 20}: PaginationParams, @Query() {keyword}){
         try {
             
             this.logger.verbose("Searching Users...");
@@ -207,9 +207,8 @@ export class UserController {
         try {
             this.logger.verbose("Updating User...")
             updatedUser.id = req.user["sub"]
-            this.logger.debug(updatedUser.name)
             const user = await this.userService.updateMyProfile(updatedUser)
-            this.logger.debug(user)
+            
             this.logger.verbose("User Updated!")
             return res.status(200).json({ message: "User updated succesfully!"})
         } catch (error) {
@@ -217,5 +216,14 @@ export class UserController {
             return res.status(500).json({ message: "Internal server error!"})
         }
     }
-
+    @UseGuards(AuthGuard)
+    @Patch("/photo")
+    async updateProfilePic(@Req() req: Request, @Res() res: Response,){
+        try {
+            this.logger.verbose("Updating Profile Pic...")
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({ message: "Internal server error!"});
+        }
+    }
 }
