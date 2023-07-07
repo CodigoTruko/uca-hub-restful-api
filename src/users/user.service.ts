@@ -42,7 +42,8 @@ export class UserService {
 
         const queryCount = await this.userModel.find().count();
         const queryResults = await this.userModel.find()
-            .select("-password -salt -posts -subscriptions -follows -followers -createdAt -updatedAt -tokens -bookmarks -email -__v")
+            .select("_id name carnet username")
+            //.select("-password -salt -posts -subscriptions -follows -followers -createdAt -updatedAt -tokens -bookmarks -email -__v")
             .exec();
         return { count: queryResults.length, results: queryResults }
         // return await this.userModel.find().exec();
@@ -179,7 +180,8 @@ export class UserService {
                 email: 0,
                 __v: 0,
             } */)
-            .select("-password -salt -posts -subscriptions -follows -followers -createdAt -updatedAt -tokens -bookmarks -email -__v")
+            .select("_id name carnet username")
+            //.select("-password -salt -posts -subscriptions -follows -followers -createdAt -updatedAt -tokens -bookmarks -email -__v")
             .skip(documentsToSkip)
             .limit(limitOfDocuments)
             .sort({ username: 1, name: 1, carnet: 1})
