@@ -74,7 +74,8 @@ export class EventController {
             this.logger.verbose("Fetching User's Profile Events...")
             const userFound = await this.userService.findUserByUsername(user)
 
-            if(!userFound) return res.status(404).json({message: "The User you are trying to fetch was not found!"})
+            if(!userFound) return res.status(404).json({message: "The User you are trying to fetch was not found!"});
+
             const countAndResults = await this.eventService.getEventsFromProfile(userFound._id, skip, limit)
 
             const fullUrl = req.protocol + '://' + req.get('host') + req.path;
@@ -159,7 +160,7 @@ export class EventController {
     //ID Param of the 
     @UseGuards(AuthGuard)
     @Delete("/comment")
-    async deleteCommentsFromEvent(@Req() req: Request, @Res() res: Response, @Query() {event, comment}){
+    async deleteCommentsFromEvent(@Req() req: Request, @Res() res: Response, @Query() { event, comment}){
         try {
             
             if( !event || !comment) return res.status(400).json({ message: "Your request requires a valid input for both event and comment"})
