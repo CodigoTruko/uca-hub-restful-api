@@ -88,14 +88,21 @@ export class EventService{
     }
 
     async getEventsFromCommunity(name, documentsToSkip = 0, limitOfDocuments = 20){
-        const communityPostsToCount = await this.communityModel.findOne({ name: name });
         
-        const results =  await this.communityModel.findOne({name: name}, { posts: { $slice:[documentsToSkip, limitOfDocuments+documentsToSkip ] } })
+        const results =  await this.communityModel.findOne({name: name}, { posts: { $slice:[documentsToSkip, limitOfDocuments+documentsToSkip-1 ] } })
             .sort({ createdAt: -1})
-            .populate("posts", "title description author" );
+            .populate({
+                path: "posts",
+                select: "title description",
+                populate: {
+                    path: "author",
+                    model: "User",
+                    select: "_id name username carnet"
+                }
+            });
         
 
-        return { count: communityPostsToCount.postsCount, results: results.posts};
+        return results.posts;
     }
 
     async getFeed(id, documentsToSkip = 0, limitOfDocuments?: number){

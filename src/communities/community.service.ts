@@ -18,7 +18,6 @@ export class CommunityService{
 
     async searchAllCommunities(keyword, documentsToSkip=0, limitOfDocuments=20){
         const communityResults = await this.communityModel.find({ $or: [
-            { _id: { $regex: keyword, $options: 'i'}},
             { name: { $regex: keyword, $options: 'i'}},
             ]}, 
         /* {
@@ -56,8 +55,8 @@ export class CommunityService{
         return visibleCommunities; */
     }
 
-    async findCommunityByIdentifier(identifier){
-        const communityFound = await this.communityModel.findOne({ $or: [{_id: identifier}, { name: identifier}] }).exec();
+    async findCommunityByName(community){
+        const communityFound = await this.communityModel.findOne({name: community}).exec();
         return communityFound;
     }
     updateCommunity(id: string, updateCommunityDto: UpdateCommunityDto){

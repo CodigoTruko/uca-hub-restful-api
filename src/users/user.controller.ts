@@ -84,26 +84,11 @@ export class UserController {
     }
 
     @UseGuards(AuthGuard)
-    @Patch("/sub/:id")
-    async subcribeToCommunity(@Req() req: Request, @Res() res: Response, @Param("id") community){
-        try {
-            this.logger.verbose("Subscribing to Community...")
-
-            const communnity =  await this.communityService.findCommunityByIdentifier(community)
-
-            return res.status(200).json({message: "User subscribed to community!"})
-        } catch (error) {
-            this.logger.error(error);
-            return res.status(500).json({error: "Internal server error!"});
-        }
-    }
-
-    @UseGuards(AuthGuard)
     @Patch("/subscribe/:identifier")
     async subscribeToCommunity(@Req() req: Request, @Res() res: Response, @Param("identifier") identifier: string){
         try {
             console.log(req.originalUrl)
-            const toFollow = await this.communityService.findCommunityByIdentifier(identifier);
+            const toFollow = await this.communityService.findCommunityByName(identifier);
             console.log(toFollow)
             if(!toFollow) return res.status(404).json({ message: "The COMMUNITY you are trying to follow does not exist!"})
 
