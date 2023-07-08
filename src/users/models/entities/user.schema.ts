@@ -31,9 +31,9 @@ export class User {
     @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Program" }]})
     program: Program;
     @ApiProperty()
-    @Prop()
+    @Prop({ default: "No description"})
     description: String;
-    @ApiProperty()
+    @ApiProperty({default: "No Image"})
     image: String;
     @ApiProperty()
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}]})
