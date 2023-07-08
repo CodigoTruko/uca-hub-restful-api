@@ -84,6 +84,40 @@ export class UserController {
     }
 
     @UseGuards(AuthGuard)
+    @Patch("/sub/:id")
+    async subcribeToCommunity(@Req() req: Request, @Res() res: Response, @Param("id") community){
+        try {
+            this.logger.verbose("Subscribing to Community...")
+
+            const communnity =  await this.communityService.findCommunityByIdentifier(community)
+
+            return res.status(200).json({message: "User subscribed to community!"})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({error: "Internal server error!"});
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Patch("/subscribe/:identifier")
+    async subscribeToCommunity(@Req() req: Request, @Res() res: Response, @Param("identifier") identifier: string){
+        try {
+            console.log(req.originalUrl)
+            const toFollow = await this.communityService.findCommunityByIdentifier(identifier);
+            console.log(toFollow)
+            if(!toFollow) return res.status(404).json({ message: "The COMMUNITY you are trying to follow does not exist!"})
+
+            const user = req.user
+            const followStatus = await this.userService.followCommunity( user["sub"], toFollow._id);
+            this.logger.debug(followStatus)
+            return res.status(200).json({ message: "Follow has been toggled!"})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({error: "Internal server error!"});
+        }
+    }
+
+    @UseGuards(AuthGuard)
     @Get("/subscriptions")
     async getSubscriptions(@Req() req: Request, @Res() res: Response, @Query() {skip = 0, limit=20}: PaginationParams){
         try {

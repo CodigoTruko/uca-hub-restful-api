@@ -22,10 +22,10 @@ export class CommunityController{
     ){}
 
     @Post()
-    createCommunity(@Req() req: Request, @Res() res: Response, @Body() createCommunityDto: CreateCommunityDto){
+    async createCommunity(@Req() req: Request, @Res() res: Response, @Body() createCommunityDto: CreateCommunityDto){
         try {
             this.logger.verbose('Creating Community..')
-            this.communityService.createCommunity(createCommunityDto);
+            await this.communityService.createCommunity(createCommunityDto);
             this.logger.verbose('Community created!')
             return res.status(201).json({message: 'Community created!'});
         } catch (error) {
@@ -44,9 +44,9 @@ export class CommunityController{
             this.logger.verbose('Creating Community Event...');
             createEventDto.author = req.user["sub"];
             await this.eventService.createCommunityEvent(createEventDto, name);
-            this.logger.verbose('Community Event Created!');
             
-            return res.status(201).json({message: 'Event created!'});
+            this.logger.verbose('Community Event Created!');
+            return res.status(201).json({message: 'Event created at Community!'});
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
@@ -97,19 +97,23 @@ export class CommunityController{
         }
     }
 
-    @Get()
-    async findAllCommunities(@Req() req: Request, @Res() res: Response){
+    @Get("/search")
+    async findAllCommunities(@Req() req: Request, @Res() res: Response, @Query() {skip=0, limit=20}: PaginationParams, @Query() {keyword}){
         try {
             this.logger.verbose('Finding All Communities...');
-            const communities = await this.communityService.findAllCommunities();
+            const communities = keyword ? await this.communityService.findAllCommunities() : await this.communityService.findAllCommunities();
+            
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, communities.length);
+            const previous = getPrevious(fullUrl, skip, limit, communities.length);
+
             this.logger.verbose('Community Created!');
-            /* const communitiesFound = this.communityService.findAllCommunities();
-
-            if(!communitiesFound){
-                return res.status(404).json({message:"Communities not found!"});
-            } */
-
-            return res.status(200).json(communities);
+            return res.status(200).json({
+                count: communities.length,
+                next: next,
+                previous: previous,
+                results: communities
+            });
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({message: 'Internal server error!'});

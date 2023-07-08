@@ -15,7 +15,7 @@ export class Community {
     name: string;
     @Prop()
     description: string;
-    @Prop({default: null})
+    @Prop({default: "No image"})
     image: string;
     @Prop({default: "public"})
     privacy: string;
