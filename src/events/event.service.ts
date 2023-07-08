@@ -30,10 +30,9 @@ export class EventService{
     async getEventsFromProfile(user, documentsToSkip=0, limitOfDocuments = 20){
 
         const results = await this.userModel.findOne({ _id: user})
-            .sort({createdAt: -1})
             .populate({
                 path: "posts",
-                select: "title description",
+                select: "title description",                
                 populate: {
                     path: "author",
                     model: "User",
@@ -48,7 +47,7 @@ export class EventService{
         return { count: results.posts.length, results: results.posts.slice(0, limitOfDocuments) }
         
     }  
-
+/* 
     async getEventsFromUser(user, documentsToSkip=0, limitOfDocuments = 20){
 
         const results = await this.userModel.findOne({ _id: user}, { posts: { $slice: [documentsToSkip, limitOfDocuments+documentsToSkip]}})
@@ -64,7 +63,7 @@ export class EventService{
             })
             .exec()
         return {count: results.posts.length, results: results.posts}
-    } 
+    }  */
 
     async getCommentsFromEvent(id){
         const event = await this.eventModel.findOne({ _id: id})
