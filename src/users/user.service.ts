@@ -65,7 +65,17 @@ export class UserService {
         return await this.userModel.findById(identifier).exec();
     }
     async findUserByUsername(username: string){
-        return await this.userModel.findOne({username: username}).exec();
+        return await this.userModel.findOne({username: username})
+            .populate({
+                path: "program",
+                populate: {
+                    path: "faculty",
+                    select: "name",
+                    model: "Faculty"
+                },
+                select: "name"
+            })
+            .exec();
     }
     async findUserByEmail(email: string){
         return await this.userModel.findOne({email: email}).exec();
@@ -83,8 +93,20 @@ export class UserService {
 
         const userToFollow = await this.userModel.findOne({ _id: toFollow}).exec();
         const userFollowing = await this.userModel.findOne({ _id: follower}).exec();
-        
-        if(userToFollow.followers.findIndex( user => user == follower) <=0 || userFollowing.follows.findIndex(user => user == toFollow)){
+
+        const v1 = userToFollow.followers.findIndex( user => user == follower)
+        console.log(`Follower is: ${follower}`)
+        console.log(userToFollow.followers)
+        console.log(v1)
+
+    
+
+        const v2 = userFollowing.follows.findIndex(user => user == toFollow)
+        console.log(`toFollow is: ${toFollow}`)
+        console.log(userFollowing.follows)
+        console.log(v2)
+
+        if( v1<0 && v2<0){
             
             const saveFollow = await this.userModel.updateOne({ _id: toFollow }, { $push: { followers: { _id: follower }}});
             const saveFollower = await this.userModel.updateOne({ _id: follower }, { $push: { follows: { _id: toFollow }}});

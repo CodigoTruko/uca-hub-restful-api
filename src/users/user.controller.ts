@@ -32,9 +32,6 @@ export class UserController {
         try {
             const toFollow = await this.userService.findUserByIdentifier(identifier);
             if(!toFollow) return res.status(404).json({ message: "The USER you are trying to follow does not exist!"})
-
-            this.logger.debug(toFollow._id)
-
             const user = req.user
             const followStatus = await this.userService.followUser(toFollow._id, user["sub"]);
             this.logger.debug(followStatus)
@@ -132,8 +129,6 @@ export class UserController {
             const user =  req.user
             const myUser = await this.userService.getMyProfile(user["sub"]);
 
-            //const { name, carnet, username, email, followers, follows, posts } = myUser;
-
             const profile = {
                 id: myUser._id,
                 name: myUser.name,
@@ -147,7 +142,7 @@ export class UserController {
                 follows: myUser.follows.length
             }
             this.logger.verbose("User's Profile Fetched...")
-            return res.status(200).json({ profile: profile})
+            return res.status(200).json({ profile })
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({error: "Internal server error!"});
