@@ -58,7 +58,7 @@ export class UserService {
         // return await this.userModel.find().exec();
     }
     async findUserByIdentifier(identifier: string){
-        const userFound = await this.userModel.findOne({ $or: [{username: identifier}, { email: identifier}] } ).exec();
+        const userFound = await this.userModel.findOne({ $or: [{username: identifier}, { email: identifier}] }).exec();
         return userFound;
     }
     async findUserById(identifier: string): Promise<UserDocument>{

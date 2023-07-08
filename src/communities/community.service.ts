@@ -16,6 +16,33 @@ export class CommunityService{
         return await createCommunity.save();   
     }
 
+    async searchAllCommunities(keyword, documentsToSkip=0, limitOfDocuments=20){
+        const communityResults = await this.communityModel.find({ $or: [
+            { name: { $regex: keyword, $options: 'i'}},
+            ]}, 
+        /* {
+            password: 0,
+            salt: 0,
+            posts: 0,
+            subscriptions: 0,
+            followers: 0,
+            follows: 0,
+            createdAt: 0,
+            updatedAt: 0,
+            tokens: 0,
+            bookmarks: 0,
+            email: 0,
+            __v: 0,
+        } */)
+        //.select("-password -salt -posts -subscriptions -follows -followers -createdAt -updatedAt -tokens -bookmarks -email -__v")
+        .skip(documentsToSkip)
+        .limit(limitOfDocuments)
+        .sort({ name: 1})
+        .exec()
+
+        return communityResults;
+    }
+
     async findAllCommunities(){
         return await this.communityModel.find().exec();
         /* this.logger.debug(this.communities);
@@ -28,12 +55,9 @@ export class CommunityService{
         return visibleCommunities; */
     }
 
-    async findCommunityByIdentifier(identifier){
-        const communityFound = await this.communityModel.findOne({ name: identifier }).exec();
+    async findCommunityByName(community){
+        const communityFound = await this.communityModel.findOne({name: community}).exec();
         return communityFound;
-        /* const community = this.communities.find(_community => _community.id === id);
-        this.logger.debug(community);
-        return community; */
     }
     updateCommunity(id: string, updateCommunityDto: UpdateCommunityDto){
         /* const {name, description, image, privacy} = updateCommunityDto;

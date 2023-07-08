@@ -157,7 +157,7 @@ export class EventController {
         }
     }
 
-    //ID Param of the 
+    //Queries are ids of the  event and comment respectively
     @UseGuards(AuthGuard)
     @Delete("/comment")
     async deleteCommentsFromEvent(@Req() req: Request, @Res() res: Response, @Query() { event, comment}){
@@ -174,6 +174,47 @@ export class EventController {
         }
     }
     
+    @UseGuards(AuthGuard)
+    @Post("/community/:name")
+    @ApiCreatedResponse({ description: "Event created at Community!" })
+    @ApiInternalServerErrorResponse({ description: 'Oops! Something went wrong. Try again later :)' })
+    async createCommunityEvent(@Req() req: Request, @Res() res: Response, @Param("name") name: string, @Body() createEventDto: CreateEventDto){
+        try {
+            this.logger.verbose('Creating Community Event...');
+            createEventDto.author = req.user["sub"];
+            await this.eventService.createCommunityEvent(createEventDto, name);
+            
+            this.logger.verbose('Community Event Created!');
+            return res.status(201).json({message: "Event created at Community!"});
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
+        }
+    }
+
+    @Get("/community/:name")
+    async findEventsFromCommunity(@Req() req: Request, @Res() res: Response, @Param("name") name: string, @Query() { skip, limit }: PaginationParams){
+        try {
+            this.logger.verbose("Fetching Community's Events...");
+            const results = await this.eventService.getEventsFromCommunity(name, skip, limit);
+
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, results.length);
+            const previous = getPrevious(fullUrl, skip, limit, results.length);
+
+            this.logger.verbose("Community's Events fetched!");
+            return res.status(200).json({
+                count: results.length,
+                next: next,
+                previous: previous,
+                results: results
+            });
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
     
     @Get()
     @ApiOkResponse({ description: 'Events found!' })
