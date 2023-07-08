@@ -21,8 +21,57 @@ export class EventController {
     ){}
     
 
+    @UseGuards(AuthGuard)
+    @Patch("/like/:id")
+    async likeEvent(@Req() req: Request, @Res() res: Response, @Param("id") event){
+        try {
+            this.logger.verbose("Liking Event...")
+
+            const eventFound = await this.eventService.findEventById(event);
+            this.logger.debug(eventFound)
+            if(!eventFound) return res.status(404).json({ message: "Event to like was NOT found!"})
+
+            const query = await this.eventService.toggleEventLike(event, req.user["sub"]);
+
+            this.logger.debug(query)
+
+            this.logger.verbose("Event like toggled!")
+            return res.status(200).json({message: "Event like toggled!"})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({ message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
     
-    
+    @UseGuards(AuthGuard)
+    @Get("/likes/:id")
+    async getEventsLikes(@Req() req: Request, @Res() res: Response, @Param("id") event, @Query() {skip=0, limit=20}: PaginationParams){
+        try {
+            this.logger.verbose("Fetching Event's Likes...")
+
+            const eventFound = await this.eventService.findEventById(event)
+        
+            if(!eventFound) return res.status(404).json({ message: "The Event to fetch its likes was NOT found!"})
+
+            const results = await this.eventService.getEventLikes(event, skip, limit)
+
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, results.likes.length);
+            const previous = getPrevious(fullUrl, skip, limit, results.likes.length);
+
+            this.logger.verbose("Event's Likes Fetched!")
+            return res.status(200).json({
+                count: eventFound.likes.length,
+                next: next,
+                previous: previous,
+                results: results.likes
+            })
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({ message: "Oops! Something went wrong. Try again later :)"});
+        }
+    }
+
 
     @UseGuards(AuthGuard)
     @Post("/profile")
