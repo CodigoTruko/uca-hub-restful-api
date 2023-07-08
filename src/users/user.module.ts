@@ -8,16 +8,21 @@ import { Community, CommunitySchema } from "src/communities/models/entities/comm
 import { CommunityService } from "src/communities/community.service";
 import { Program, ProgramSchema } from "src/programs/models/entities/program.schema";
 import { Faculty, FacultySchema } from "src/faculties/models/entities/faculty.schema";
+import { EventService } from "src/events/event.service";
+import { Event, EventSchema } from "src/events/models/entities/event.schema";
+import { Comment, CommentSchema } from "src/events/models/entities/comment.schema";
 
 @Module({
     imports: [
         MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
         MongooseModule.forFeature([{ name: Community.name, schema: CommunitySchema}]),
+        MongooseModule.forFeature([{ name: Event.name, schema: EventSchema}]),
+        MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema}]),
         MongooseModule.forFeature([{ name: Program.name, schema: ProgramSchema}]),
-        MongooseModule.forFeature([{name: Faculty.name, schema: FacultySchema}])
+        MongooseModule.forFeature([{ name: Faculty.name, schema: FacultySchema}])
     ],
     controllers: [UserController],
-    providers: [UserService, CommunityService],
+    providers: [UserService, CommunityService, EventService],
     exports: [UserService]
 })
 export class UserModule {}
