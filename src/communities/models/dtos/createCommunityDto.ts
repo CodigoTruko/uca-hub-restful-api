@@ -6,6 +6,7 @@ export class CreateCommunityDto {
     name: string;
     @IsNotEmpty()
     description: string;
+    creator;
     image: string;
     privacy: string;
     visibility: boolean;

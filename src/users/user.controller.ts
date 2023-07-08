@@ -51,6 +51,8 @@ export class UserController {
 
             const myUser = await this.userService.findUserById(req.user["sub"])
 
+            const query = await this.userService.bookmarkAnEvent(myUser._id, eventToBookmark._id)
+
             return res.status(200).json({})
         } catch (error) {
             this.logger.error(error);
@@ -59,12 +61,63 @@ export class UserController {
     }
 
     @UseGuards(AuthGuard)
+    @Get('/bookmarks')
+    async getUserBookmarks(@Req() req: Request, @Res() res: Response, @Query() {skip=0, limit=20}: PaginationParams){
+        try {
+            this.logger.verbose("Fetching Users Bookmarks!");
+            const user = await this.userService.getMyProfile(req.user["sub"]);
+
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, user.bookmarks.length);
+            const previous = getPrevious(fullUrl, skip, limit, user.bookmarks.length);
+
+            this.logger.verbose("Users Bookmarks Fetched!");
+            return res.status(200).json({ 
+                count: user.bookmarks.length,
+                next: next,
+                previous: previous,
+                results: user.bookmarks})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({error: "Internal server error!"});
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Patch("/subscribe/:identifier")
+    async subscribeToCommunity(@Req() req: Request, @Res() res: Response, @Param("identifier") identifier: string){
+        try {
+            console.log(req.originalUrl)
+            const toFollow = await this.communityService.findCommunityByName(identifier);
+            console.log(toFollow)
+            if(!toFollow) return res.status(404).json({ message: "The COMMUNITY you are trying to follow does not exist!"})
+
+            const user = req.user
+            const followStatus = await this.userService.followCommunity( user["sub"], toFollow._id);
+            this.logger.debug(followStatus)
+            return res.status(200).json({ message: "Follow has been toggled!"})
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({error: "Internal server error!"});
+        }
+    }
+
+    @UseGuards(AuthGuard)
     @Get("/subscriptions")
-    async getSubscriptions(@Req() req: Request, @Res() res: Response){
+    async getSubscriptions(@Req() req: Request, @Res() res: Response, @Query() {skip = 0, limit=20}: PaginationParams){
         try {
             const user =  await this.userService.getMyProfile(req.user["sub"])
 
-            return res.status(200).json({ subcriptions: user.subscriptions})
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, user.bookmarks.length);
+            const previous = getPrevious(fullUrl, skip, limit, user.bookmarks.length);
+
+            return res.status(200).json({ 
+                count: user.bookmarks.length,
+                next: next,
+                previous: previous,
+                results: user.subscriptions
+            })
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({error: "Internal server error!"})
@@ -148,23 +201,6 @@ export class UserController {
             return res.status(500).json({error: "Internal server error!"});
         }
     }
-    
-    
-    @UseGuards(AuthGuard)
-    @Get('/bookmarks')
-    async getUserBookmarks(@Req() req: Request, @Res() res: Response){
-        try {
-            this.logger.verbose("Fetching Users Bookmarks!");
-            const user = await this.userService.getMyProfile(req.user["sub"]);
-
-            this.logger.verbose("Users Bookmarks Fetched!");
-            return res.status(200).json({ subscriptions: user.bookmarks})
-        } catch (error) {
-            this.logger.error(error);
-            return res.status(500).json({error: "Internal server error!"});
-        }
-    }
-
 
     @UseGuards(AuthGuard)
     @Get("/search")
