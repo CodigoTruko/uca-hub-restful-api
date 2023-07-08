@@ -139,7 +139,7 @@ export class UserService {
             return { deleteCommunity, deleteUser};
         }
     }
-
+    //Bookmarks with both userId and Event id
     async bookmarkAnEvent(user, event){
         const userBookmarking = await this.userModel.findOne({_id: user}).exec()
 
