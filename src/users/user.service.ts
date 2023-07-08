@@ -16,6 +16,8 @@ export class UserService {
         @InjectModel(Community.name) private communityModel: Model<Community>,
         ) {}
 
+    //TODO implement get user bookmarks, and communities
+
     async createUser(registerUserDto: RegisterUserDto ){
         const userSalt = await bcrypt.genSaltSync();
         registerUserDto.password = await bcrypt.hash(registerUserDto.password, userSalt);
@@ -38,9 +40,16 @@ export class UserService {
         createdUser.save()
         this.logger.debug(`User created with id: ${createdUser._id}`);
     }
-    async findAllUsers(){
 
-        const queryCount = await this.userModel.find().count();
+    async getUserFollowsAndFollowers(user){
+        const userFound = await this.userModel.findOne({_id: user})
+            .populate("follows", "_id name carnet username")
+            .populate("followers", "_id name carnet username")
+            .exec()
+        return userFound
+    }
+
+    async findAllUsers(){
         const queryResults = await this.userModel.find()
             .select("_id name carnet username")
             //.select("-password -salt -posts -subscriptions -follows -followers -createdAt -updatedAt -tokens -bookmarks -email -__v")
@@ -61,9 +70,7 @@ export class UserService {
     async findUserByEmail(email: string){
         return await this.userModel.findOne({email: email}).exec();
     }
-    async updateProfileByIdentifier(identifier: string, updateUserDto: updateUserDto){
- 
-    }
+
     async addTokenToUser(identifier: string, newToken: string){
         const userFound = await this.findUserByIdentifier(identifier);
 
@@ -109,6 +116,14 @@ export class UserService {
 
             return { deleteCommunity, deleteUser};
         }
+    }
+
+    async bookmarkAnEvent(user, event){
+        const userBookmarking = await this.userModel.findOne({_id: user}).exec()
+
+        userBookmarking.bookmarks.splice(0, 0, event)
+
+        return await userBookmarking.save()
     }
 
     async getMyProfile(id){
@@ -190,6 +205,5 @@ export class UserService {
         return { count: usersCount, results: usersResults}
 
     }
-    //TODO implement get user bookmarks, and communities
-    // also get normal users
+    
 }

@@ -23,14 +23,16 @@ export class EventService{
     async createProfileEvent(event: CreateEventDto, user){
         const createdEvent = await new this.eventModel(event).save();
         this.logger.log(createdEvent)
-        const userUpdated =  await this.userModel.updateOne({_id: user}, {$push: { posts: {_id: createdEvent._id} }})
-        this.logger.log(userUpdated)
+        const userFound = await this.userModel.findOne({ _id: user }).exec()
+        userFound.posts.splice(0,0, createdEvent)
+        userFound.save()
+        // const userUpdated =  await this.userModel.updateOne({_id: user}, {$push: { posts: {_id: createdEvent._id} }})
+        //this.logger.log(userUpdated)
     }
     
     async getEventsFromProfile(user, documentsToSkip=0, limitOfDocuments = 20){
 
         const results = await this.userModel.findOne({ _id: user})
-            .sort({createdAt: -1})
             .populate({
                 path: "posts",
                 select: "title description",
@@ -48,23 +50,6 @@ export class EventService{
         return { count: results.posts.length, results: results.posts.slice(0, limitOfDocuments) }
         
     }  
-
-    async getEventsFromUser(user, documentsToSkip=0, limitOfDocuments = 20){
-
-        const results = await this.userModel.findOne({ _id: user}, { posts: { $slice: [documentsToSkip, limitOfDocuments+documentsToSkip]}})
-            .sort({createdAt: -1})
-            .populate({
-                path: "posts",
-                select: "title description",
-                populate: {
-                    path: "author",
-                    model: "User",
-                    select: "_id name username carnet"
-                }
-            })
-            .exec()
-        return {count: results.posts.length, results: results.posts}
-    } 
 
     async getCommentsFromEvent(id){
         const event = await this.eventModel.findOne({ _id: id})
@@ -110,7 +95,7 @@ export class EventService{
             .populate("posts", "title description author" );
         
 
-        return { count: communityPostsToCount.postsCount, results: results.posts} ;
+        return { count: communityPostsToCount.postsCount, results: results.posts};
     }
 
     async getFeed(id, documentsToSkip = 0, limitOfDocuments?: number){
@@ -171,7 +156,8 @@ export class EventService{
     }
 
     async findEventById(id: String){
-        // return this.events.find(_event => _event.id === id);
+        const event = await this.eventModel.findOne({ _id: id}).exec()
+        return event
     }
 
     async updateEvent(id: String, updateEventDto: UpdateEventDto){

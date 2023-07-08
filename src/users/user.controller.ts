@@ -11,6 +11,7 @@ import { ApiTags } from "@nestjs/swagger";
 import { count } from "console";
 import { getNext, getPrevious } from "src/utils/queryUrl.calculator";
 import { updateUserDto } from "./models/dtos/updateUserDto";
+import { EventService } from "src/events/event.service";
 
 @ApiTags('User')
 @Controller('user')
@@ -19,6 +20,7 @@ export class UserController {
     private readonly logger = new Logger(UserController.name);
     constructor(
         private userService: UserService,
+        private eventService: EventService,
         private communityService: CommunityService,
     ) {}
     
@@ -45,9 +47,14 @@ export class UserController {
 
     @UseGuards(AuthGuard)
     @Patch("/bookmark/:identifier")
-    async bookmarkEvent(@Req() req: Request, @Res() res: Response, @Param("identifier") identifier: string){
+    async bookmarkEvent(@Req() req: Request, @Res() res: Response, @Param("identifier") event: string){
         try {
-            
+            this.logger.verbose("Bookmarking the Event...")
+            const eventToBookmark = await this.eventService.findEventById(event);
+
+            const myUser = await this.userService.findUserById(req.user["sub"])
+
+            return res.status(200).json({})
         } catch (error) {
             this.logger.error(error);
             return res.status(500).json({error: "Internal server error!"});
@@ -73,18 +80,15 @@ export class UserController {
     @Get("/follows")
     async getFollows(@Req() req: Request, @Res() res: Response, @Query() {skip = 0, limit=20}: PaginationParams){
         try {
-            const user =  await this.userService.getMyProfile(req.user["sub"])
-
-            const count = user.followers.length
-            console.log(count)
-            /* const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const user =  await this.userService.getUserFollowsAndFollowers(req.user["sub"])
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
             const next = getNext(fullUrl, skip, limit, count);
-            const previous = getPrevious(fullUrl, skip, limit, count); */
+            const previous = getPrevious(fullUrl, skip, limit, count);
 
             return res.status(200).json({
-                count: "count",
-                next: "thing",
-                previous: "thing2",
+                count: user.follows.length,
+                next: next,
+                previous: previous,
                 results: user.follows,
 
             })
@@ -97,9 +101,20 @@ export class UserController {
 
     @UseGuards(AuthGuard)
     @Get("/followers")
-    async getFollowers(@Req() req: Request, @Res() res: Response){
+    async getFollowers(@Req() req: Request, @Res() res: Response, @Query() {skip = 0, limit = 20 }: PaginationParams){
         try {
-            const user =  await this.userService.getMyProfile(req.user["sub"])
+            const user =  await this.userService.getUserFollowsAndFollowers(req.user["sub"])
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, count);
+            const previous = getPrevious(fullUrl, skip, limit, count);
+
+            return res.status(200).json({
+                count: user.followers.length,
+                next: next,
+                previous: previous,
+                results: user.followers,
+
+            })
 
             return res.status(200).json({ followers: user.followers})
         } catch (error) {

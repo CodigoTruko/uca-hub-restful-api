@@ -68,6 +68,35 @@ export class EventController {
     }
 
     @UseGuards(AuthGuard)
+    @Get("/profile/:id")
+    async getProfileEventsFromUser(@Req() req: Request, @Res() res: Response, @Param("id") user,  @Query() { skip = 0, limit = 10 }: PaginationParams){
+        try {
+            this.logger.verbose("Fetching User's Profile Events...")
+            const userFound = await this.userService.findUserByUsername(user)
+
+            if(!userFound) return res.status(404).json({message: "The User you are trying to fetch was not found!"});
+
+            const countAndResults = await this.eventService.getEventsFromProfile(userFound._id, skip, limit)
+
+            const fullUrl = req.protocol + '://' + req.get('host') + req.path;
+            const next = getNext(fullUrl, skip, limit, countAndResults.count);
+            const previous = getPrevious(fullUrl, skip, limit, countAndResults.count);
+
+            this.logger.verbose("User's Profile Events Fetched!")
+
+            return res.status(200).json({
+                count: countAndResults.count,
+                next: next,
+                previous: previous,
+                results: countAndResults.results
+            })
+        } catch (error) {
+            this.logger.error(error);
+            return res.status(500).json({ message: "Oops! Something went wrong. Try again later :)" });
+        }
+    }
+
+    @UseGuards(AuthGuard)
     @Get("/feed")
     async getFeed(@Req() req: Request, @Res() res: Response, @Query() {skip = 0, limit = 20}: PaginationParams){
         try {
@@ -131,7 +160,7 @@ export class EventController {
     //ID Param of the 
     @UseGuards(AuthGuard)
     @Delete("/comment")
-    async deleteCommentsFromEvent(@Req() req: Request, @Res() res: Response, @Query() {event, comment}){
+    async deleteCommentsFromEvent(@Req() req: Request, @Res() res: Response, @Query() { event, comment}){
         try {
             
             if( !event || !comment) return res.status(400).json({ message: "Your request requires a valid input for both event and comment"})
