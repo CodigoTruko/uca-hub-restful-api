@@ -107,13 +107,13 @@ export class UserController {
     async getSubscriptions(@Req() req: Request, @Res() res: Response, @Query() {skip = 0, limit=20}: PaginationParams){
         try {
             const user =  await this.userService.getMyProfile(req.user["sub"])
-
+            
             const fullUrl = req.protocol + '://' + req.get('host') + req.path;
             const next = getNext(fullUrl, skip, limit, user.bookmarks.length);
             const previous = getPrevious(fullUrl, skip, limit, user.bookmarks.length);
 
             return res.status(200).json({ 
-                count: user.bookmarks.length,
+                count: user.subscriptions.length,
                 next: next,
                 previous: previous,
                 results: user.subscriptions

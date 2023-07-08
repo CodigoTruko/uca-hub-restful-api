@@ -13,6 +13,8 @@ export class Event {
     description: string;
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId,  ref: "User"}]})
     author: User
+    @Prop({type: [{type: mongoose.Schema.Types.ObjectId,  ref: "User"}]})
+    likes: User[]
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "Comment"}]})
     comments: Comment[]
     @Prop({ default: true})

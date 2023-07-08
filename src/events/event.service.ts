@@ -25,9 +25,7 @@ export class EventService{
         this.logger.log(createdEvent)
         const userFound = await this.userModel.findOne({ _id: user }).exec()
         userFound.posts.splice(0,0, createdEvent)
-        userFound.save()
-        // const userUpdated =  await this.userModel.updateOne({_id: user}, {$push: { posts: {_id: createdEvent._id} }})
-        //this.logger.log(userUpdated)
+        await userFound.save()
     }
     
     async getEventsFromProfile(user, documentsToSkip=0, limitOfDocuments = 20){
@@ -70,14 +68,36 @@ export class EventService{
     async createComment(id, comment){
         const createdComment = await new this.commentModel(comment).save();
 
-        const event = await this.eventModel.updateOne({_id: id}, {$push: { comments: { _id: createdComment.id}}})
+        const event = await this.eventModel.updateOne({_id: id}, {$push: { comments: { _id: createdComment.id}}});
         return { createdComment, event}
     }
 
     async deleteComment(event, comment){
 
-        const query = await this.eventModel.updateOne({_id: event}, {$pull: { comments: comment}})
+        const query = await this.eventModel.updateOne({_id: event}, {$pull: { comments: comment}});
         return { query }
+    }
+
+    async toggleEventLike(event, user){
+        const eventFound = await this.eventModel.findOne({ _id: event}).exec()
+
+        const index = eventFound.likes.findIndex( _u => _u == user)
+
+        if(index < 0){
+            eventFound.likes.splice(0,0,user)
+        }else{
+            eventFound.likes.splice(index, 1)
+        }
+        
+
+        return await eventFound.save()
+    }
+
+    async getEventLikes(event, documentsToSkip, limitOfDocuments){
+        const results = await this.eventModel.findOne({_id: event}, { likes: { $slice: [ documentsToSkip, limitOfDocuments+documentsToSkip-1 ] } } )
+            .populate("likes", "_id name carnet username")
+            .exec()
+        return results
     }
 
     async createCommunityEvent(event: CreateEventDto, name){
@@ -101,7 +121,6 @@ export class EventService{
                 }
             });
         
-
         return results.posts;
     }
 
@@ -157,7 +176,6 @@ export class EventService{
         return { results, count };
     }
 
-    //TODO: Mucha mierda. todo el crud basicamente
     async findAllVisibleEvents(skip?: number, limit?: number){
         return await this.eventModel.find({visibility: true}).skip(skip).limit(limit).exec();
     }
