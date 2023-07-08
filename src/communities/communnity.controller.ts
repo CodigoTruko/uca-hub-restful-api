@@ -21,10 +21,12 @@ export class CommunityController{
         private readonly userService: UserService,
     ){}
 
+    @UseGuards(AuthGuard)
     @Post()
     async createCommunity(@Req() req: Request, @Res() res: Response, @Body() createCommunityDto: CreateCommunityDto){
         try {
             this.logger.verbose('Creating Community..')
+            createCommunityDto.creator =  req.user["sub"]
             await this.communityService.createCommunity(createCommunityDto);
             this.logger.verbose('Community created!')
             return res.status(201).json({message: 'Community created!'});
@@ -53,7 +55,7 @@ export class CommunityController{
         }
     }
 
-    //TODO Migrate this endpoint to community controller
+    //TODO Migrate this endpoint to event controller
     @Get("/community/:name")
     async findEventsFromCommunity(@Req() req: Request, @Res() res: Response, @Param("name") name: string, @Query() { skip, limit }: PaginationParams){
         try {
