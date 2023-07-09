@@ -126,7 +126,7 @@ export class EventService{
 
     async getFeed(id, documentsToSkip = 0, limitOfDocuments?: number){
         const user = await this.userModel.findOne({ _id: id }).exec();
-        console.log(user)
+        this.logger.debug(user)
         console.log(user.follows)
         const feedCount = this.eventModel.find({ author: { $in: user.follows}})
             .sort({ createdAt: -1})

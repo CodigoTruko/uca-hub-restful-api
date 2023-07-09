@@ -150,8 +150,7 @@ export class EventController {
     async getFeed(@Req() req: Request, @Res() res: Response, @Query() {skip = 0, limit = 20}: PaginationParams){
         try {
             this.logger.verbose("Fetching User's Feed...");
-            const user = req.user;
-            const countAndFeed = await this.eventService.getFeed(user["sub"], skip, limit);
+            const countAndFeed = await this.eventService.getFeed(req.user["sub"], skip, limit);
             
             const fullUrl = req.protocol + '://' + req.get('host') + req.path;
             const next = getNext(fullUrl, skip, limit, countAndFeed.count);
