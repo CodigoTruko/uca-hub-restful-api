@@ -266,7 +266,7 @@ export class UserController {
             this.logger.verbose("Updating User...")
             updatedUser.id = req.user["sub"]
             const user = await this.userService.updateMyProfile(updatedUser)
-            
+            this.logger.debug(user)
             this.logger.verbose("User Updated!")
             return res.status(200).json({ message: "User updated succesfully!"})
         } catch (error) {
