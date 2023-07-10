@@ -13,9 +13,9 @@ export class Event {
     description: string;
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId,  ref: "User"}]})
     author: User
-    @Prop({type: [{type: mongoose.Schema.Types.ObjectId,  ref: "User"}]})
+    @Prop({type: [{type: mongoose.Schema.Types.ObjectId,  ref: "User"}], default: []})
     likes: User[]
-    @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "Comment"}]})
+    @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "Comment"}], default: []})
     comments: Comment[]
     @Prop({ default: true})
     visibility: boolean;

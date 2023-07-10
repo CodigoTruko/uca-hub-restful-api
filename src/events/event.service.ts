@@ -40,7 +40,7 @@ export class EventService{
         const results = await this.userModel.findOne({ _id: user})
             .populate({
                 path: "posts",
-                select: "title description",
+                select: "title description likes comments",
                 populate: {
                     path: "author",
                     model: "User",
@@ -48,13 +48,7 @@ export class EventService{
                 }
             })
             .exec()
-        
-        this.logger.debug(`hola: ${results.posts}`)
-
-
         const mappedResults = eventResponseMapper(results.posts);
-        this.logger.debug(mappedResults)
-
         if(documentsToSkip){
             return { count: mappedResults.length, results: mappedResults.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
         }
@@ -126,7 +120,7 @@ export class EventService{
             .sort({ createdAt: -1})
             .populate({
                 path: "posts",
-                select: "title description",
+                select: "title description likes comments",
                 populate: {
                     path: "author",
                     model: "User",

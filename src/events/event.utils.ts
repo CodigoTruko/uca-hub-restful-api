@@ -5,10 +5,10 @@ export const eventResponseMapper = (results) => {
             "title": result.title,
             "description": result.description,
             "author": result.author,
-            "likes": result.likesCount || 0,
-            "comments": result.commentsCount || 0,
+            "likes": result.likes.length || 0,
+            "comments": result.likes.length || 0,
         }
     })
-
+    console.log(mappedResults)
     return mappedResults
 }
