@@ -9,6 +9,7 @@ import {Request} from 'express'
 import { User } from 'src/users/models/entities/user.schema';
 import { Community } from 'src/communities/models/entities/community.schema';
 import { Comment } from './models/entities/comment.schema';
+import { eventResponseMapper } from './event.utils';
 
 @Injectable()
 export class EventService{
@@ -42,10 +43,14 @@ export class EventService{
             })
             .exec()
         
+        console.log(results.posts)
+
+        const mappedResults = eventResponseMapper(results.posts);
+            
         if(documentsToSkip){
-            return { count: results.posts.length, results: results.posts.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
+            return { count: results.posts.length, results: mappedResults.posts.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
         }
-        return { count: results.posts.length, results: results.posts.slice(0, limitOfDocuments) }
+        return { count: results.posts.length, results: mappedResults.posts.slice(0, limitOfDocuments) }
         
     }  
 
@@ -121,7 +126,8 @@ export class EventService{
                 }
             });
         
-        return results.posts;
+        const mappedResults = eventResponseMapper(results.posts)
+        return mappedResults;
     }
 
     async getFeed(id, documentsToSkip = 0, limitOfDocuments?: number){
@@ -152,8 +158,10 @@ export class EventService{
 
         const results = await feedResults.exec()
         console.log(results)
+        
+        const mappedResults = eventResponseMapper(results)
 
-        return { count: results.length, results: results, };
+        return { count: results.length, results: mappedResults, };
     }
 
     async createEvent(event){
@@ -171,8 +179,10 @@ export class EventService{
         }
         const results = await query.exec();
         const count = await this.eventModel.count();
-       
-        return { results, count };
+        
+        const mappedResults = eventResponseMapper(results)
+
+        return { mappedResults, count };
     }
 
     async findAllVisibleEvents(skip?: number, limit?: number){

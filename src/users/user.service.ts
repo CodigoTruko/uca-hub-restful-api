@@ -81,12 +81,12 @@ export class UserService {
         return await this.userModel.findOne({email: email}).exec();
     }
 
-    async addTokenToUser(identifier: string, newToken: string){
+    /* async addTokenToUser(identifier: string, newToken: string){
         const userFound = await this.findUserByIdentifier(identifier);
 
         const userTokens = userFound.tokens.concat(newToken)
         userFound.tokens = userTokens
-    }
+    } */
 
     //Works with params being the usernames of the people within the interaction
     async followUser(toFollow, follower){
@@ -154,7 +154,7 @@ export class UserService {
                 path: "program",
                 populate: {
                     path: "faculty",
-                    select: "name",
+                    select: "_id name",
                     model: "Faculty"
                 },
                 select: "name"
