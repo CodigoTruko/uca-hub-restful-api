@@ -9,6 +9,7 @@ import {Request} from 'express'
 import { User } from 'src/users/models/entities/user.schema';
 import { Community } from 'src/communities/models/entities/community.schema';
 import { Comment } from './models/entities/comment.schema';
+import { eventResponseMapper } from './event.utils';
 
 @Injectable()
 export class EventService{
@@ -24,7 +25,13 @@ export class EventService{
         const createdEvent = await new this.eventModel(event).save();
         this.logger.log(createdEvent)
         const userFound = await this.userModel.findOne({ _id: user }).exec()
-        userFound.posts.splice(0,0, createdEvent)
+        console.log(userFound)
+        if(!userFound.posts){
+            userFound.posts.push(createdEvent)
+        }else{
+            userFound.posts.splice(0,0, createdEvent)
+        }
+        
         await userFound.save()
     }
     
@@ -42,10 +49,16 @@ export class EventService{
             })
             .exec()
         
+        this.logger.debug(`hola: ${results.posts}`)
+
+
+        const mappedResults = eventResponseMapper(results.posts);
+        this.logger.debug(mappedResults)
+
         if(documentsToSkip){
-            return { count: results.posts.length, results: results.posts.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
+            return { count: mappedResults.length, results: mappedResults.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
         }
-        return { count: results.posts.length, results: results.posts.slice(0, limitOfDocuments) }
+        return { count: mappedResults.length, results: mappedResults.slice(0, limitOfDocuments) }
         
     }  
 
@@ -121,7 +134,8 @@ export class EventService{
                 }
             });
         
-        return results.posts;
+        const mappedResults = eventResponseMapper(results.posts)
+        return mappedResults;
     }
 
     async getFeed(id, documentsToSkip = 0, limitOfDocuments?: number){
@@ -152,8 +166,10 @@ export class EventService{
 
         const results = await feedResults.exec()
         console.log(results)
+        
+        const mappedResults = eventResponseMapper(results)
 
-        return { count: results.length, results: results, };
+        return { count: results.length, results: mappedResults, };
     }
 
     async createEvent(event){
@@ -171,8 +187,10 @@ export class EventService{
         }
         const results = await query.exec();
         const count = await this.eventModel.count();
-       
-        return { results, count };
+        
+        const mappedResults = eventResponseMapper(results)
+
+        return { mappedResults, count };
     }
 
     async findAllVisibleEvents(skip?: number, limit?: number){

@@ -13,7 +13,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('UCA Hub')
     .setDescription('The place where you get to stay tuned with all the events happening in UCA.')
-    .setVersion('0.0.1')
+    .setVersion('1')
     .build();
   const document = SwaggerModule.createDocument(app, config);
 

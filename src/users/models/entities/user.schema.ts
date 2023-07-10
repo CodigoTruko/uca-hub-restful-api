@@ -28,12 +28,12 @@ export class User {
     @Prop({required: true})
     email: String;
     @ApiProperty()
-    @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Program" }]})
+    @Prop({type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Program" }], default: null})
     program: Program;
     @ApiProperty()
     @Prop({ default: "No description"})
     description: String;
-    @ApiProperty({default: "No Image"})
+    @Prop({default: "No image"})
     image: String;
     @ApiProperty()
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}]})
@@ -52,8 +52,6 @@ export class User {
     password: String;
     @Prop()
     salt: String;
-    @Prop()
-    tokens: String[];
     //methods or virtuals
     postsCount;
     genSalt;

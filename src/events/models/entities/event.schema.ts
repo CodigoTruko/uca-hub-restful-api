@@ -19,6 +19,20 @@ export class Event {
     comments: Comment[]
     @Prop({ default: true})
     visibility: boolean;
+    likesCount;
+    commentsCount;
 }
 
-export const EventSchema = SchemaFactory.createForClass(Event)
+const EventSchema = SchemaFactory.createForClass(Event)
+
+EventSchema.virtual("likesCount")
+    .get(function(this: EventDocument){
+        return this.likes.length
+    })
+
+EventSchema.virtual("commentsCount")
+    .get(function(this: EventDocument){
+        return this.comments.length
+    })
+
+export { EventSchema }
