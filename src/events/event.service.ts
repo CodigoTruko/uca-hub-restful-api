@@ -128,12 +128,13 @@ export class EventService{
         const user = await this.userModel.findOne({ _id: id }).exec();
         this.logger.debug(user)
         console.log(user.follows)
-        const feedCount = this.eventModel.find({ author: { $in: user.follows}})
-            .sort({ createdAt: -1})
-            .populate("author", "name username");
+
+        let authorsForFeed = user.follows
+
+        authorsForFeed.push(user)
 
         const feedResults = this.eventModel.find(
-            { author: { $in: user.follows} },
+            { author: { $in: authorsForFeed} },
             {
                 visibility: 0,
                 createdAt: 0,
@@ -149,12 +150,10 @@ export class EventService{
         
         if(limitOfDocuments) { feedResults.limit(limitOfDocuments)}
 
-        const count = await feedCount.count()
-        console.log(count)
         const results = await feedResults.exec()
         console.log(results)
 
-        return { count: count, results: results, };
+        return { count: results.length, results: results, };
     }
 
     async createEvent(event){
