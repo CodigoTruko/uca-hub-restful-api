@@ -34,6 +34,7 @@ export class User {
     @Prop({ default: "No description"})
     description: String;
     @ApiProperty({default: "No Image"})
+    @Prop()
     image: String;
     @ApiProperty()
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}]})
