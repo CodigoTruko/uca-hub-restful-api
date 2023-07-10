@@ -1,73 +1,38 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# UCA HUB REST API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Welcome to the UCA HUB REST API repository! This repository contains the backend code for the UCA HUB mobile app, a social platform designed for university and college students. The app allows users to connect with fellow students, foster academic growth, seek assistance from peers, create posts, join communities, and update their profiles.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Technologies Used
 
-## Description
+The UCA HUB REST API is built using the following technologies:
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **NestJS**: A progressive Node.js framework for building efficient and scalable server-side applications.
+- **Mongoose**: An object data modeling (ODM) library for MongoDB and Node.js, providing a straightforward way to work with MongoDB in a TypeScript-based environment.
+- **Swagger**: A powerful yet easy-to-use library for generating interactive API documentation.
 
-## Installation
+## Getting Started
 
-```bash
-$ npm install
-```
+To get started with the UCA HUB REST API, follow these steps:
 
-## Running the app
+1. Clone this repository to your local machine.
+2. Install the necessary dependencies by running `npm install`.
+3. Configure the environment variables required for the application to function correctly. You can find a template in the `.env.example` file. Create a new `.env` file and populate it with the appropriate values.
+4. Start the server by running `npm run start`.
 
-```bash
-# development
-$ npm run start
+## API Documentation
 
-# watch mode
-$ npm run start:dev
+The API documentation for the UCA HUB REST API is available at [ucahub.tech/api](https://ucahub.tech/api). It provides detailed information about the available endpoints, request/response formats, and authentication requirements.
 
-# production mode
-$ npm run start:prod
-```
+## Public Domain
 
-## Test
+The UCA HUB REST API is hosted on the public domain [ucahub.tech](https://ucahub.tech). You can access the API and integrate it with your mobile app or any other client application.
 
-```bash
-# unit tests
-$ npm run test
+## Contributions
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Contributions to the UCA HUB REST API are welcome! If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request.
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+The UCA HUB REST API is released under the [MIT License](LICENSE). Please review the license file for more information.
+
+We hope you find the UCA HUB REST API useful for your projects. Happy coding!
