@@ -25,7 +25,13 @@ export class EventService{
         const createdEvent = await new this.eventModel(event).save();
         this.logger.log(createdEvent)
         const userFound = await this.userModel.findOne({ _id: user }).exec()
-        userFound.posts.splice(0,0, createdEvent)
+        console.log(userFound)
+        if(!userFound.posts){
+            userFound.posts.push(createdEvent)
+        }else{
+            userFound.posts.splice(0,0, createdEvent)
+        }
+        
         await userFound.save()
     }
     
@@ -43,14 +49,16 @@ export class EventService{
             })
             .exec()
         
-        console.log(results.posts)
+        this.logger.debug(`hola: ${results.posts}`)
+
 
         const mappedResults = eventResponseMapper(results.posts);
-            
+        this.logger.debug(mappedResults)
+
         if(documentsToSkip){
-            return { count: results.posts.length, results: mappedResults.posts.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
+            return { count: mappedResults.length, results: mappedResults.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
         }
-        return { count: results.posts.length, results: mappedResults.posts.slice(0, limitOfDocuments) }
+        return { count: mappedResults.length, results: mappedResults.slice(0, limitOfDocuments) }
         
     }  
 
