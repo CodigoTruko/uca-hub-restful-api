@@ -2,10 +2,8 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CreateEventDto } from './models/dto/createEventDto';
 import { UpdateEventDto } from './models/dto/updateEventDto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Event, EventDocument } from './models/entities/event.schema';
+import { Event } from './models/entities/event.schema';
 import { Model } from 'mongoose';
-import { REQUEST } from '@nestjs/core';
-import {Request} from 'express'
 import { User } from 'src/users/models/entities/user.schema';
 import { Community } from 'src/communities/models/entities/community.schema';
 import { Comment } from './models/entities/comment.schema';
@@ -37,6 +35,8 @@ export class EventService{
     
     async getEventsFromProfile(user, documentsToSkip=0, limitOfDocuments = 20){
 
+        const userToCompare = await this.userModel.findOne({ _id: user}).exec()
+
         const results = await this.userModel.findOne({ _id: user})
             .populate({
                 path: "posts",
@@ -48,11 +48,34 @@ export class EventService{
                 }
             })
             .exec()
-        const mappedResults = eventResponseMapper(results.posts);
+        const mappedResults = eventResponseMapper(results.posts, userToCompare);
+
+        //console.log(mappedResults)
+        // iterar las publis revisar si en los likes de la publi esta el usuario
+        // y revisar si el usuario tiene en sus bookmarks esa publi
+        const likedAndBookmarked = mappedResults.map( post => {
+
+            
+            /* if(post.likes.f(userToCompare._id)) {
+                post.isLiked = true
+            } else {
+                post.isLiked = false
+            }
+
+            if(userToCompare.bookmarks.includes(post._id)) {
+                post.isBookmarked = true
+            } else {
+                post.isBookmarked = false
+            } */
+
+            return post
+        })
+
+
         if(documentsToSkip){
-            return { count: mappedResults.length, results: mappedResults.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
+            return { count: likedAndBookmarked.length, results: likedAndBookmarked.slice(documentsToSkip, documentsToSkip+limitOfDocuments) }
         }
-        return { count: mappedResults.length, results: mappedResults.slice(0, limitOfDocuments) }
+        return { count: likedAndBookmarked.length, results: likedAndBookmarked.slice(0, limitOfDocuments) }
         
     }  
 
@@ -114,8 +137,11 @@ export class EventService{
         this.logger.log(communityUpdated)
     }
 
-    async getEventsFromCommunity(name, documentsToSkip = 0, limitOfDocuments = 20){
+    async getEventsFromCommunity(name, user, documentsToSkip = 0, limitOfDocuments = 20){
+
         
+        const userToCompare = await this.userModel.findOne({ _id: user}).exec()
+
         const results =  await this.communityModel.findOne({name: name}, { posts: { $slice:[documentsToSkip, limitOfDocuments+documentsToSkip-1 ] } })
             .sort({ createdAt: -1})
             .populate({
@@ -128,7 +154,8 @@ export class EventService{
                 }
             });
         
-        const mappedResults = eventResponseMapper(results.posts)
+        const mappedResults = eventResponseMapper(results.posts, userToCompare)
+
         return mappedResults;
     }
 
@@ -161,7 +188,7 @@ export class EventService{
         const results = await feedResults.exec()
         console.log(results)
         
-        const mappedResults = eventResponseMapper(results)
+        const mappedResults = eventResponseMapper(results, user)
 
         return { count: results.length, results: mappedResults, };
     }
@@ -170,7 +197,10 @@ export class EventService{
         await new this.eventModel(event).save()
     }
 
-    async findAllEvents(documentsToSkip = 0, limitOfDocuments?: number){
+    async findAllEvents(user, documentsToSkip = 0, limitOfDocuments?: number){
+
+        const userToCompare = await this.userModel.findOne({ _id: user}).exec()
+
         const query = this.eventModel
             .find({})
             .sort({ createdAt: -1 })
@@ -182,7 +212,7 @@ export class EventService{
         const results = await query.exec();
         const count = await this.eventModel.count();
         
-        const mappedResults = eventResponseMapper(results)
+        const mappedResults = eventResponseMapper(results, userToCompare)
 
         return { mappedResults, count };
     }
