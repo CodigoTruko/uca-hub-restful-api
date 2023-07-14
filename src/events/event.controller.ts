@@ -239,12 +239,12 @@ export class EventController {
             return res.status(500).json({message: 'Oops! Something went wrong. Try again later :)'});
         }
     }
-
+    @UseGuards(AuthGuard)
     @Get("/community/:name")
     async findEventsFromCommunity(@Req() req: Request, @Res() res: Response, @Param("name") name: string, @Query() { skip, limit }: PaginationParams){
         try {
             this.logger.verbose("Fetching Community's Events...");
-            const results = await this.eventService.getEventsFromCommunity(name, skip, limit);
+            const results = await this.eventService.getEventsFromCommunity(name, req.user["sub"], skip, limit);
 
             const fullUrl = req.protocol + '://' + req.get('host') + req.path;
             const next = getNext(fullUrl, skip, limit, results.length);
@@ -263,7 +263,7 @@ export class EventController {
         }
     }
 
-    
+    @UseGuards(AuthGuard)
     @Get()
     @ApiOkResponse({ description: 'Events found!' })
     @ApiNotFoundResponse({ description: 'Events not found' })
@@ -271,7 +271,7 @@ export class EventController {
     async findAllEvents(@Req() req: Request, @Res() res: Response, @Query() { skip = 0, limit = 20}: PaginationParams){
         try {
             this.logger.verbose('Finding all events...');
-            const events = await this.eventService.findAllEvents()
+            const events = await this.eventService.findAllEvents(req.user["sub"])
             
             if(!events) return res.status(404).json({message: 'Events not found'});
             

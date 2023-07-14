@@ -50,7 +50,10 @@ export class AuthController{
             const token =  await this.authService.login(user);
             
             this.logger.verbose("Login Successful!")
-            return res.status(200).json({ token: token })
+            return res.status(200).json({ 
+                username: userFound.username,
+                token: token 
+            })
 
         } catch (error) {
             this.logger.error(error);
